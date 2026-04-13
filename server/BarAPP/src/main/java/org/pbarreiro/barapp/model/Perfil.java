@@ -27,6 +27,8 @@ public class Perfil {
     @Column(nullable = false)
     private String nombre;
 
+    private String email;
+
     @Column(columnDefinition = "TEXT DEFAULT 'camarero'")
     private String rol;
 

@@ -21,23 +21,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configure(http))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.GET, "/api/productos/**").hasAnyRole("admin", "camarero")
-                .requestMatchers(HttpMethod.GET, "/api/categorias/**").hasAnyRole("admin", "camarero")
-
-                .requestMatchers(HttpMethod.POST, "/api/productos/**").hasRole("admin")
-                .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasRole("admin")
-                .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("admin")
-
-                .requestMatchers(HttpMethod.POST, "/api/categorias/**").hasRole("admin")
-                .requestMatchers(HttpMethod.PUT, "/api/categorias/**").hasRole("admin")
-                .requestMatchers(HttpMethod.DELETE, "/api/categorias/**").hasRole("admin")
-
-                .requestMatchers("/api/dashboard/**").hasRole("admin")
-
-                .requestMatchers("/api/mesas/**").hasAnyRole("admin", "camarero")
-                .requestMatchers("/api/comandas/**").hasAnyRole("admin", "camarero")
-                .requestMatchers("/api/perfiles/**").hasAnyRole("admin", "camarero")
-
+                .requestMatchers("/api/**").permitAll() // TEMPORAL: Permitir todo para desarrollo y admin-web
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2

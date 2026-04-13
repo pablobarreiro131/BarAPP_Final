@@ -2,6 +2,7 @@ package org.pbarreiro.barapp.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.pbarreiro.barapp.dto.PerfilDTO;
+import org.pbarreiro.barapp.dto.StaffRequest;
 import org.pbarreiro.barapp.service.PerfilService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,8 +27,23 @@ public class PerfilController {
         return ResponseEntity.ok(perfilService.findById(id));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<PerfilDTO> getMe() {
+        return ResponseEntity.ok(perfilService.findCurrentPerfil());
+    }
+
     @PostMapping
     public ResponseEntity<PerfilDTO> createPerfil(@RequestBody PerfilDTO dto) {
         return ResponseEntity.ok(perfilService.save(dto));
+    }
+
+    @PostMapping("/auth")
+    public ResponseEntity<PerfilDTO> createStaff(@RequestBody StaffRequest request) {
+        return ResponseEntity.ok(perfilService.createWithAuth(
+                request.getEmail(), 
+                request.getPassword(), 
+                request.getNombre(), 
+                request.getRol()
+        ));
     }
 }
