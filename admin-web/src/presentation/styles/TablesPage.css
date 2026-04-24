@@ -1,0 +1,95 @@
+.tables-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.action-bar {
+  margin-bottom: 20px;
+}
+
+.add-form {
+  display: flex;
+  gap: 15px;
+}
+
+.add-form input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  padding: 12px 20px;
+  border-radius: 12px;
+  color: white;
+  outline: none;
+}
+
+.add-btn {
+  background: var(--primary);
+  color: black;
+  padding: 0 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.table-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+}
+
+.table-icon {
+  width: 50px;
+  height: 50px;
+  background: var(--bg-surface-elevated);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+.table-info h4 {
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+.status {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status.free { color: #4ade80; }
+.status.occupied { color: #f87171; }
+
+.delete-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  color: var(--text-muted);
+  opacity: 0;
+}
+
+.table-card:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  color: #ff4b4b;
+}
+
+.loader {
+  text-align: center;
+  padding: 50px;
+  color: var(--text-secondary);
+}
