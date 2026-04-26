@@ -10,31 +10,53 @@ import MenuPage from './presentation/pages/MenuPage';
 import StaffPage from './presentation/pages/StaffPage';
 
 const App = () => {
-  const [isAdmin, setIsAdmin] = useState(localStorage.getItem('isAdmin') === 'true');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
         try {
           const profile = await apiClient.getMe();
-          const adminStatus = profile && profile.rol === 'admin';
-          setIsAdmin(adminStatus);
-          localStorage.setItem('isAdmin', adminStatus ? 'true' : 'false');
-        } catch (err) {
-          console.error('Error al verificar rol:', err);
+          setIsAdmin(profile?.rol === 'admin');
+        } catch {
           setIsAdmin(false);
-          localStorage.removeItem('isAdmin');
         }
       } else {
         setIsAdmin(false);
         localStorage.removeItem('isAdmin');
+        localStorage.removeItem('supabase_token');
+      }
+      setReady(true);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setIsAdmin(false);
+        localStorage.removeItem('isAdmin');
+        localStorage.removeItem('supabase_token');
+      } else if (event === 'SIGNED_IN' && session) {
+        try {
+          const profile = await apiClient.getMe();
+          const adminStatus = profile?.rol === 'admin';
+          setIsAdmin(adminStatus);
+          localStorage.setItem('isAdmin', adminStatus ? 'true' : 'false');
+        } catch {
+          setIsAdmin(false);
+        }
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const authenticated = isAdmin;
+  if (!ready) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0c0c0c', color: '#6b6560' }}>
+        <p style={{ letterSpacing: '5px', textTransform: 'uppercase', fontSize: '0.7rem', fontFamily: 'Inter, sans-serif' }}>Cargando...</p>
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
@@ -42,14 +64,14 @@ const App = () => {
         <Route
           path="/login"
           element={
-            authenticated ? <Navigate to="/" /> : <LoginPage onLoginSuccess={() => setIsAdmin(true)} />
+            isAdmin ? <Navigate to="/" /> : <LoginPage onLoginSuccess={() => setIsAdmin(true)} />
           }
         />
 
         <Route
           path="/"
           element={
-            authenticated ? (
+            isAdmin ? (
               <DashboardLayout>
                 <DashboardPage />
               </DashboardLayout>
@@ -62,7 +84,7 @@ const App = () => {
         <Route
           path="/tables"
           element={
-            authenticated ? (
+            isAdmin ? (
               <DashboardLayout>
                 <TablesPage />
               </DashboardLayout>
@@ -75,7 +97,7 @@ const App = () => {
         <Route
           path="/menu"
           element={
-            authenticated ? (
+            isAdmin ? (
               <DashboardLayout>
                 <MenuPage />
               </DashboardLayout>
@@ -88,7 +110,7 @@ const App = () => {
         <Route
           path="/staff"
           element={
-            authenticated ? (
+            isAdmin ? (
               <DashboardLayout>
                 <StaffPage />
               </DashboardLayout>
