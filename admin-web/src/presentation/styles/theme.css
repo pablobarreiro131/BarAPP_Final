@@ -1,36 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 :root {
-  --bg-dark: #0a0a0c;
-  --bg-surface: #141417;
-  --bg-surface-elevated: #1c1c21;
+  --bg-dark: #0c0c0c;
+  --bg-surface: #111111;
+  --bg-surface-elevated: #1a1a1a;
   
-  --primary: #c9a86a; /* Gold/Amber */
-  --primary-glow: rgba(201, 168, 106, 0.2);
-  --secondary: #6366f1; /* Indigo */
-  
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  
+  --primary: #e8e0d4;
+  --primary-glow: rgba(232, 224, 212, 0.1);
+  --secondary: #999;
+
+  --text-primary: #f0ece6;
+  --text-secondary: #a8a29e;
+  --text-muted: #6b6560;
+
   --border-color: rgba(255, 255, 255, 0.08);
-  --glass-bg: rgba(20, 20, 23, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-blur: blur(12px);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --glass-bg: rgba(17, 17, 17, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-blur: blur(20px);
 
-  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.3);
-  
+  --shadow-md: none;
+  --shadow-lg: none;
+
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+  --transition-fast: 0.2s ease;
 
-[data-theme='light'] {
-  --bg-dark: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #f1f5f9;
-  
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  
-  --border-color: rgba(0, 0, 0, 0.08);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(0, 0, 0, 0.1);
+  --accent-red: #c44;
+  --accent-green: #6a9;
+  --accent-amber: #b98;
 }
