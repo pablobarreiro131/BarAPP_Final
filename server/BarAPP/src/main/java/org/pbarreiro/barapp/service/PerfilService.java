@@ -46,17 +46,15 @@ public class PerfilService {
     public PerfilDTO findCurrentPerfil() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof Jwt jwt) {
-            String supabaseId = jwt.getSubject(); // El UUID de Supabase está en el claim 'sub'
+            String supabaseId = jwt.getSubject();
             return findById(UUID.fromString(supabaseId));
         }
         throw new ResourceNotFoundException("No se pudo identificar al usuario desde el token");
     }
 
     public PerfilDTO createWithAuth(String email, String password, String nombre, String rol) {
-        // 1. Crear en Supabase Auth y obtener el UUID
         String supabaseId = supabaseAuthService.createAdminUser(email, password, rol);
         
-        // 2. Crear en nuestra tabla 'perfiles' con ese mismo UUID
         Perfil perfil = new Perfil();
         perfil.setId(UUID.fromString(supabaseId));
         perfil.setNombre(nombre);

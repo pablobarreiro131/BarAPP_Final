@@ -1,6 +1,7 @@
 package org.pbarreiro.barapp.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.pbarreiro.barapp.dto.DashboardResumenDTO;
 import org.pbarreiro.barapp.dto.ProductoVentaDTO;
 import org.pbarreiro.barapp.service.DashboardService;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,11 @@ import java.util.List;
 public class DashboardController {
 
     private final DashboardService dashboardService;
+
+    @GetMapping("/resumen")
+    public ResponseEntity<DashboardResumenDTO> getResumen() {
+        return ResponseEntity.ok(dashboardService.getResumen());
+    }
 
     @GetMapping("/ventas-productos")
     public ResponseEntity<List<ProductoVentaDTO>> getVentasPorProducto() {

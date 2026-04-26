@@ -15,20 +15,15 @@ import org.pbarreiro.barapp.dto.SupabaseUserRequest;
 public class SupabaseAuthService {
 
     @Value("${SUPABASE_JWT_ISSUER_URI}")
-    private String issuerUri; // Example: https://xyz.supabase.co/auth/v1
+    private String issuerUri;
 
     @Value("${SUPABASE_SERVICE_ROLE_KEY}")
     private String serviceRoleKey;
 
     private final RestClient restClient = RestClient.builder().build();
 
-    /**
-     * Retorna el UUID del usuario creado.
-     */
     public String createAdminUser(String email, String password, String role) {
         String url = issuerUri + "/admin/users";
-
-        System.out.println("[SupabaseAuthService] Creando usuario: " + email + " con password de longitud: " + (password != null ? password.length() : 0));
 
         SupabaseUserRequest body = SupabaseUserRequest.builder()
                 .email(email)

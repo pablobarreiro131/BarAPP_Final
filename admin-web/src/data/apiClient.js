@@ -58,7 +58,9 @@ export const apiClient = {
   }),
   getProductos: () => apiClient.fetchWithAuth('/productos'),
   createProducto: (producto) => apiClient.fetchWithAuth('/productos', {
-    method: 'POST',
-    body: JSON.stringify(producto)
-  }),
-};
+      method: 'POST',
+      body: JSON.stringify(producto)
+    }),
+  
+    getDashboardResumen: () => apiClient.fetchWithAuth('/dashboard/resumen'),
+  };

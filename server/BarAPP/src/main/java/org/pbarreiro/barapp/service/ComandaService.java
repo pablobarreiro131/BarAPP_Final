@@ -89,6 +89,10 @@ public class ComandaService {
         Producto producto = productoRepository.findById(detalleDTO.getProductoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado: " + detalleDTO.getProductoId()));
 
+        if (producto.getStock() < detalleDTO.getCantidad()) {
+            throw new IllegalStateException("Stock insuficiente para el producto: " + producto.getNombre());
+        }
+
         DetalleComanda detalle = new DetalleComanda();
         detalle.setComanda(comanda);
         detalle.setProducto(producto);
@@ -96,6 +100,9 @@ public class ComandaService {
         detalle.setPrecioUnitario(producto.getPrecio()); 
 
         DetalleComanda savedDetalle = detalleComandaRepository.save(detalle);
+        
+        producto.setStock(producto.getStock() - detalleDTO.getCantidad());
+        productoRepository.save(producto);
         
         actualizarTotalComanda(comanda);
         
