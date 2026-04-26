@@ -76,11 +76,15 @@ val repositoryModule = module {
 val useCaseModule = module {
     single { GetTables(get()) }
     single { GetMenu(get()) }
+    single { GetActiveComandaUseCase(get()) }
+    single { CreateComandaUseCase(get()) }
+    single { AddDetalleUseCase(get()) }
+    single { PagarComandaUseCase(get()) }
 }
 
 val viewModelModule = module {
     viewModel { TablesViewModel(get(), get()) }
-    viewModel { MenuViewModel(get()) }
+    viewModel { MenuViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { LoginViewModel(get()) }
 }
 

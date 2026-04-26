@@ -2,36 +2,64 @@ package org.pabarreiro.barapp.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.pabarreiro.barapp.domain.model.Categoria
+import org.pabarreiro.barapp.domain.model.Comanda
 import org.pabarreiro.barapp.domain.model.Producto
-import org.pabarreiro.barapp.domain.usecase.GetMenu
+import org.pabarreiro.barapp.domain.repository.BarRepository
+import org.pabarreiro.barapp.domain.usecase.*
 
 data class MenuUiState(
     val categorias: List<Categoria> = emptyList(),
     val productos: List<Producto> = emptyList(),
     val selectedCategoriaId: Long? = null,
+    val activeComanda: Comanda? = null,
     val isLoading: Boolean = false,
+    val isComandaActionLoading: Boolean = false,
     val error: String? = null
 )
 
 class MenuViewModel(
-    private val getMenu: GetMenu
+    private val getMenu: GetMenu,
+    private val getActiveComandaUseCase: GetActiveComandaUseCase,
+    private val createComandaUseCase: CreateComandaUseCase,
+    private val addDetalleUseCase: AddDetalleUseCase,
+    private val pagarComandaUseCase: PagarComandaUseCase,
+    private val repository: BarRepository
 ) : ViewModel() {
 
     private val _selectedCategoriaId = MutableStateFlow<Long?>(null)
-    
+    private val _mesaId = MutableStateFlow<Long?>(null)
+    private val _isComandaActionLoading = MutableStateFlow(false)
+    private val _error = MutableStateFlow<String?>(null)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<MenuUiState> = combine(
-        getMenu.getCategorias(),
-        _selectedCategoriaId.flatMapLatest { getMenu.getProductos(it) },
-        _selectedCategoriaId
-    ) { categorias, productos, selectedId ->
+        combine(
+            getMenu.getCategorias(),
+            _selectedCategoriaId.flatMapLatest { getMenu.getProductos(it) },
+            _selectedCategoriaId,
+            ::Triple
+        ),
+        combine(
+            _mesaId.flatMapLatest { id ->
+                if (id != null) getActiveComandaUseCase(id) else flowOf(null)
+            },
+            _isComandaActionLoading,
+            _error,
+            ::Triple
+        )
+    ) { (categorias, productos, selectedId), (activeComanda, isComandaActionLoading, error) ->
         MenuUiState(
             categorias = categorias,
             productos = productos,
             selectedCategoriaId = selectedId,
-            isLoading = false
+            activeComanda = activeComanda,
+            isLoading = false,
+            isComandaActionLoading = isComandaActionLoading,
+            error = error
         )
     }.stateIn(
         scope = viewModelScope,
@@ -41,18 +69,80 @@ class MenuViewModel(
 
     init {
         viewModelScope.launch {
-            println("[BarApp] [MenuViewModel] Sincronizando menú con el servidor...")
             val result = getMenu.syncMenu()
-            if (result.isSuccess) {
-                println("[BarApp] [MenuViewModel] Menú sincronizado exitosamente")
-            } else {
-                println("[BarApp] [MenuViewModel] Error sincronizando menú: ${result.exceptionOrNull()?.message}")
+            if (!result.isSuccess) {
+                _error.value = "Error sincronizando menú: ${result.exceptionOrNull()?.message}"
             }
         }
     }
 
+    fun setMesaId(mesaId: Long) {
+        if (_mesaId.value != mesaId) {
+            _mesaId.value = mesaId
+        }
+    }
+
     fun selectCategoria(id: Long?) {
-        println("[BarApp] [MenuViewModel] Categoría seleccionada: $id")
         _selectedCategoriaId.value = id
+    }
+
+    fun addProductToOrder(producto: Producto) {
+        val currentMesaId = _mesaId.value ?: return
+        
+        viewModelScope.launch {
+            _isComandaActionLoading.value = true
+            _error.value = null
+            
+            try {
+                var comandaId = uiState.value.activeComanda?.id
+
+                if (comandaId == null) {
+                    val perfil = repository.getCurrentUser().firstOrNull()
+                    if (perfil == null) {
+                        _error.value = "Error: Usuario no autenticado"
+                        return@launch
+                    }
+                    
+                    val createResult = createComandaUseCase(currentMesaId, perfil)
+                    if (createResult.isSuccess) {
+                        comandaId = createResult.getOrThrow().id
+                    } else {
+                        _error.value = "Error creando comanda: ${createResult.exceptionOrNull()?.message}"
+                        return@launch
+                    }
+                }
+
+                if (comandaId != null) {
+                    val addResult = addDetalleUseCase(comandaId, producto.id, 1)
+                    if (!addResult.isSuccess) {
+                        _error.value = "Error añadiendo producto: ${addResult.exceptionOrNull()?.message}"
+                    }
+                }
+            } catch (e: Exception) {
+                _error.value = "Error inesperado: ${e.message}"
+            } finally {
+                _isComandaActionLoading.value = false
+            }
+        }
+    }
+
+    fun pagarComanda() {
+        val comandaId = uiState.value.activeComanda?.id ?: return
+        
+        viewModelScope.launch {
+            _isComandaActionLoading.value = true
+            _error.value = null
+            
+            val result = pagarComandaUseCase(comandaId)
+            if (!result.isSuccess) {
+                _error.value = "Error al pagar comanda: ${result.exceptionOrNull()?.message}"
+            }
+            
+            _isComandaActionLoading.value = false
+        }
+    }
+    
+    fun clearError() {
+        _error.value = null
     }
 }

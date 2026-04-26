@@ -11,11 +11,12 @@ import org.koin.compose.KoinContext
 import org.pabarreiro.barapp.presentation.ui.LoginScreen
 import org.pabarreiro.barapp.presentation.ui.MenuScreen
 import org.pabarreiro.barapp.presentation.ui.TablesScreen
+import org.pabarreiro.barapp.presentation.ui.theme.BarAppTheme
 
 @Composable
 fun App() {
     KoinContext {
-        MaterialTheme {
+        BarAppTheme {
             val navController = rememberNavController()
             
             NavHost(
