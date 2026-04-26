@@ -3,7 +3,7 @@ const BASE_URL = 'http://localhost:8081/api';
 export const apiClient = {
   async fetchWithAuth(endpoint, options = {}) {
     let token = localStorage.getItem('supabase_token');
-    
+
     if (!token) {
       try {
         const { supabase } = await import('./supabaseClient');
@@ -58,9 +58,9 @@ export const apiClient = {
   }),
   getProductos: () => apiClient.fetchWithAuth('/productos'),
   createProducto: (producto) => apiClient.fetchWithAuth('/productos', {
-      method: 'POST',
-      body: JSON.stringify(producto)
-    }),
-  
-    getDashboardResumen: () => apiClient.fetchWithAuth('/dashboard/resumen'),
-  };
+    method: 'POST',
+    body: JSON.stringify(producto)
+  }),
+
+  getDashboardResumen: () => apiClient.fetchWithAuth('/dashboard/resumen'),
+};

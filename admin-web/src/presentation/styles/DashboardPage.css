@@ -1,0 +1,255 @@
+.dash-container {
+  animation: dashFadeIn 0.5s ease-out;
+}
+
+@keyframes dashFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.dash-error-banner {
+  border: 1px solid rgba(204, 68, 68, 0.2);
+  padding: 14px 20px;
+  margin-bottom: 32px;
+  font-size: 0.8rem;
+  color: var(--accent-red);
+  letter-spacing: 0.5px;
+}
+
+.dash-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border-color);
+  border: 1px solid var(--border-color);
+  margin-bottom: 48px;
+}
+
+@media (max-width: 900px) {
+  .dash-kpis {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg-dark);
+  padding: 32px 28px;
+  transition: background var(--transition-fast);
+}
+
+.kpi-card:hover {
+  background: var(--bg-surface);
+}
+
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpi-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--text-muted);
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: -0.5px;
+  margin-top: 4px;
+  color: var(--text-primary);
+}
+
+.kpi-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+}
+
+.dash-charts-row {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+@media (max-width: 1100px) {
+  .dash-charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-chart-card {
+  padding: 32px;
+}
+
+.dash-chart-card:hover,
+.dash-ranking:hover {
+  border-color: var(--border-strong);
+}
+
+.dash-section-title {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 28px;
+}
+
+.dash-chart-wrap {
+  width: 100%;
+}
+
+.dash-empty-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 280px;
+  gap: 12px;
+  color: var(--text-muted);
+}
+
+.dash-empty-chart p {
+  font-weight: 400;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.dash-empty-chart span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.dash-empty-table {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+.chart-tooltip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 0;
+  padding: 12px 16px;
+}
+
+.chart-tooltip-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.chart-tooltip-value {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.dash-ranking {
+  padding: 32px;
+}
+
+.rank-header,
+.rank-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 100px 120px;
+  align-items: center;
+  padding: 14px 8px;
+}
+
+.rank-header {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 4px;
+}
+
+.rank-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background var(--transition-fast);
+}
+
+.rank-row:last-child {
+  border-bottom: none;
+}
+
+.rank-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.rank-pos {
+  font-weight: 300;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+.rank-name {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.rank-qty {
+  font-weight: 400;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+.rank-rev {
+  font-weight: 600;
+  color: var(--primary);
+  text-align: right;
+}
+
+.dash-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  height: 400px;
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.dash-loader-spinner {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border-color);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
