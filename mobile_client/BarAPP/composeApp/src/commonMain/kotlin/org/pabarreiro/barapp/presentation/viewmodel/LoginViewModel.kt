@@ -19,6 +19,22 @@ class LoginViewModel(
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
+    
+    init {
+        checkSession()
+    }
+
+    private fun checkSession() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            if (repository.hasSession()) {
+                println("[BarApp] [LoginViewModel] Autologin exitoso")
+                _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
+            } else {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
+        }
+    }
 
     fun login(email: String, password: String) {
         viewModelScope.launch {

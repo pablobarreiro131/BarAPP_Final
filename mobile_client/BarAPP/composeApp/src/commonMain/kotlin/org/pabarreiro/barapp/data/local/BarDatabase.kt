@@ -10,7 +10,8 @@ import org.pabarreiro.barapp.data.local.entity.*
         ProductoEntity::class,
         CategoriaEntity::class,
         ComandaEntity::class,
-        DetalleComandaEntity::class
+        DetalleComandaEntity::class,
+        SessionEntity::class
     ],
     version = 1
 )

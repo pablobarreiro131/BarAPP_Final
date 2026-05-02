@@ -8,6 +8,7 @@ interface BarRepository {
     suspend fun login(email: String, password: String): Result<Unit>
     suspend fun getCurrentUser(): Flow<Perfil?>
     suspend fun logout()
+    suspend fun hasSession(): Boolean
 
     // Mesas
     fun getMesas(): Flow<List<Mesa>>

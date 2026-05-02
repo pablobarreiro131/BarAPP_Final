@@ -77,6 +77,7 @@ val LuxuryShapes = Shapes(
 fun BarAppTheme(
     content: @Composable () -> Unit
 ) {
+    SystemAppearance(isDark = true)
     MaterialTheme(
         colorScheme = LuxuryColorScheme,
         typography = LuxuryTypography,

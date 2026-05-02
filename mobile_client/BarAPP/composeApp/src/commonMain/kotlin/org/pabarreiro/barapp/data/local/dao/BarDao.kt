@@ -94,4 +94,14 @@ interface BarDao {
 
     @Query("UPDATE detalles_comanda SET isSynced = :status WHERE comandaId = :comandaId")
     suspend fun updateDetallesSyncStatus(comandaId: String, status: Boolean)
+
+    // Session
+    @Query("SELECT * FROM session LIMIT 1")
+    suspend fun getSession(): SessionEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSession(session: SessionEntity)
+
+    @Query("DELETE FROM session")
+    suspend fun deleteSession()
 }

@@ -14,6 +14,7 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
+import org.pabarreiro.barapp.data.local.RoomSessionManager
 import org.pabarreiro.barapp.data.BarRepositoryImpl
 import org.pabarreiro.barapp.data.local.BarDatabase
 import org.pabarreiro.barapp.data.local.LocalDataSource
@@ -57,7 +58,9 @@ val appModule = module {
             supabaseUrl = "https://lrtbmykbvjhslabsfpir.supabase.co",
             supabaseKey = "sb_publishable_yjE0ZwVxZ8Ft9QmKTJ5X9w_v-75JacN"
         ) {
-            install(Auth)
+            install(Auth) {
+                sessionManager = RoomSessionManager(get())
+            }
         }
     }
     

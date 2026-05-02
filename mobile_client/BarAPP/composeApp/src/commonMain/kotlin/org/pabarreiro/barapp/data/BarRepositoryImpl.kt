@@ -61,6 +61,35 @@ class BarRepositoryImpl(
         _currentUser.value = null
     }
 
+    override suspend fun hasSession(): Boolean {
+        println("[BarApp] [Repository] Comprobando si existe sesión activa...")
+
+        var session = supabaseClient.auth.currentSessionOrNull()
+        var attempts = 0
+        while (session == null && attempts < 10) {
+            kotlinx.coroutines.delay(200)
+            session = supabaseClient.auth.currentSessionOrNull()
+            attempts++
+        }
+
+        if (session != null) {
+            println("[BarApp] [Repository] Sesión activa encontrada para ${session.user?.email}")
+            // Cargamos el perfil si no está cargado
+            if (_currentUser.value == null) {
+                try {
+                    val perfil = remoteDataSource.getMe().toDomain()
+                    _currentUser.value = perfil
+                } catch (e: Exception) {
+                    println("[BarApp] [Repository] Error recuperando perfil tras restaurar sesión: ${e.message}")
+                }
+            }
+            return true
+        }
+        
+        println("[BarApp] [Repository] No se encontró sesión activa tras $attempts intentos")
+        return false
+    }
+
     override fun getMesas(): Flow<List<Mesa>> = localDataSource.getMesas()
 
     override suspend fun syncMesas(): Result<Unit> = try {
