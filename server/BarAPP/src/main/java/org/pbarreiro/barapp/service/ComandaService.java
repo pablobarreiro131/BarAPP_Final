@@ -127,6 +127,26 @@ public class ComandaService {
         return mapToDTOBuilder(savedComanda);
     }
 
+    @Transactional
+    public void removeDetalle(UUID comandaId, Long detalleId) {
+        Comanda comanda = comandaRepository.findById(comandaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comanda no encontrada: " + comandaId));
+
+        if (comanda.getFechaCierre() != null) {
+            throw new IllegalStateException("La comanda ya está cerrada");
+        }
+
+        DetalleComanda detalle = detalleComandaRepository.findById(detalleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Detalle no encontrado: " + detalleId));
+
+        Producto producto = detalle.getProducto();
+        producto.setStock(producto.getStock() + detalle.getCantidad());
+        productoRepository.save(producto);
+
+        detalleComandaRepository.delete(detalle);
+        actualizarTotalComanda(comanda);
+    }
+
     private void actualizarTotalComanda(Comanda comanda) {
         List<DetalleComanda> detalles = detalleComandaRepository.findByComandaId(comanda.getId());
         BigDecimal total = detalles.stream()

@@ -48,4 +48,10 @@ public class ComandaController {
     public ResponseEntity<ComandaDTO> payAndClose(@PathVariable UUID id) {
         return ResponseEntity.ok(comandaService.payAndClose(id));
     }
+
+    @DeleteMapping("/{id}/detalles/{detalleId}")
+    public ResponseEntity<Void> removeDetalle(@PathVariable UUID id, @PathVariable Long detalleId) {
+        comandaService.removeDetalle(id, detalleId);
+        return ResponseEntity.noContent().build();
+    }
 }
