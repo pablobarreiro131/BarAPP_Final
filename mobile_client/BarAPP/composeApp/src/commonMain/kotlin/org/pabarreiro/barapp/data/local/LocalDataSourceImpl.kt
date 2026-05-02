@@ -14,7 +14,7 @@ class LocalDataSourceImpl(private val barDao: BarDao) : LocalDataSource {
         barDao.getMesas().map { list -> list.map { it.toDomain() } }
 
     override suspend fun saveMesas(mesas: List<Mesa>) {
-        barDao.insertMesas(mesas.map { it.toEntity() })
+        barDao.updateMesas(mesas.map { it.toEntity() })
     }
 
     override suspend fun getMesaById(id: Long): Mesa? =
@@ -24,14 +24,14 @@ class LocalDataSourceImpl(private val barDao: BarDao) : LocalDataSource {
         barDao.getCategorias().map { list -> list.map { it.toDomain() } }
 
     override suspend fun saveCategorias(categorias: List<Categoria>) {
-        barDao.insertCategorias(categorias.map { it.toEntity() })
+        barDao.updateCategorias(categorias.map { it.toEntity() })
     }
 
     override fun getProductos(categoriaId: Long?): Flow<List<Producto>> = 
         barDao.getProductos(categoriaId).map { list -> list.map { it.toDomain() } }
 
     override suspend fun saveProductos(productos: List<Producto>) {
-        barDao.insertProductos(productos.map { it.toEntity() })
+        barDao.updateProductos(productos.map { it.toEntity() })
     }
 
     override fun getComandasActivas(mesaId: Long): Flow<List<Comanda>> {

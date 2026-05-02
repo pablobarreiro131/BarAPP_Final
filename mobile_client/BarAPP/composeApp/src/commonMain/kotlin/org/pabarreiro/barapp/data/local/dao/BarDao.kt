@@ -16,6 +16,15 @@ interface BarDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMesas(mesas: List<MesaEntity>)
 
+    @Query("DELETE FROM mesas")
+    suspend fun deleteAllMesas()
+
+    @Transaction
+    suspend fun updateMesas(mesas: List<MesaEntity>) {
+        deleteAllMesas()
+        insertMesas(mesas)
+    }
+
     // Categorias
     @Query("SELECT * FROM categorias")
     fun getCategorias(): Flow<List<CategoriaEntity>>
@@ -23,12 +32,30 @@ interface BarDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategorias(categorias: List<CategoriaEntity>)
 
+    @Query("DELETE FROM categorias")
+    suspend fun deleteAllCategorias()
+
+    @Transaction
+    suspend fun updateCategorias(categorias: List<CategoriaEntity>) {
+        deleteAllCategorias()
+        insertCategorias(categorias)
+    }
+
     // Productos
     @Query("SELECT * FROM productos WHERE categoriaId = :categoriaId OR :categoriaId IS NULL")
     fun getProductos(categoriaId: Long?): Flow<List<ProductoEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProductos(productos: List<ProductoEntity>)
+
+    @Query("DELETE FROM productos")
+    suspend fun deleteAllProductos()
+
+    @Transaction
+    suspend fun updateProductos(productos: List<ProductoEntity>) {
+        deleteAllProductos()
+        insertProductos(productos)
+    }
 
     // Comandas
     @Query("SELECT * FROM comandas WHERE mesaId = :mesaId AND estadoPago = 0")

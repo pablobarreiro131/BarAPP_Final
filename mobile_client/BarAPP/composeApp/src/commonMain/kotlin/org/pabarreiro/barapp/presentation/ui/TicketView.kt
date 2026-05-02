@@ -24,153 +24,173 @@ fun TicketView(
     mesa: Mesa?,
     onClose: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BgDark.copy(alpha = 0.85f))
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = BgDark.copy(alpha = 0.9f)
     ) {
-        Column(
-            modifier = Modifier
-                .widthIn(max = 400.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(Color(0xFFFDFDFD))
-                .padding(20.dp)
+        Box(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            contentAlignment = Alignment.Center
         ) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 420.dp)
+                    .clip(RoundedCornerShape(0.dp))
+                    .background(Color(0xFFFDFDFD))
+                    .padding(24.dp)
+            ) {
 
-            Text(
-                "BAR APP PREMIUM",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp
-                ),
-                color = Color.Black,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-            
-            Text(
-                "Calle de la Gastronomía, 123",
-                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                color = Color.DarkGray,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            DashedDivider()
-            
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
-                    "MESA: ${mesa?.numeroMesa ?: "N/A"}",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                    color = Color.Black
+                    "BAR APP PREMIUM",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    ),
+                    color = Color.Black,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
                 )
+
                 Text(
-                    "ID: ${comanda.id.takeLast(6).uppercase()}",
+                    "Calle de la Gastronomía, 123",
+                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.DarkGray,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                DashedDivider()
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "MESA: ${mesa?.numeroMesa ?: "N/A"}",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = Color.Black
+                    )
+                    Text(
+                        "ID: ${comanda.id.takeLast(6).uppercase()}",
+                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                        color = Color.Black
+                    )
+                }
+
+                Text(
+                    "FECHA: ${formatDate(comanda.fechaApertura)}",
                     style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
                     color = Color.Black
                 )
-            }
 
-            Text(
-                "FECHA: ${formatDate(comanda.fechaApertura)}",
-                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                color = Color.Black
-            )
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            DashedDivider()
-            
-            Spacer(modifier = Modifier.height(12.dp))
+                DashedDivider()
 
-            // Items
-            Column(modifier = Modifier.weight(1f, fill = false)) {
-                comanda.detalles.forEach { detalle ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Items
+                Column(modifier = Modifier.weight(1f, fill = false)) {
+                    comanda.detalles.forEach { detalle ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    (detalle.nombreProducto ?: "Producto").uppercase(),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                                    color = Color.Black
+                                )
+                                Text(
+                                    "${detalle.cantidad} x %.2f€".format(detalle.precioUnitario),
+                                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                                    color = Color.DarkGray
+                                )
+                            }
                             Text(
-                                (detalle.nombreProducto ?: "Producto").uppercase(),
+                                "%.2f€".format(detalle.precioUnitario * detalle.cantidad),
                                 style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-                                color = Color.Black
-                            )
-                            Text(
-                                "${detalle.cantidad} x %.2f€".format(detalle.precioUnitario),
-                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                                color = Color.DarkGray
+                                color = Color.Black,
+                                modifier = Modifier.padding(start = 8.dp)
                             )
                         }
-                        Text(
-                            "%.2f€".format(detalle.precioUnitario * detalle.cantidad),
-                            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-                            color = Color.Black,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            DashedDivider()
-            
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+                DashedDivider()
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "TOTAL",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.ExtraBold
+                        ),
+                        color = Color.Black
+                    )
+                    Text(
+                        "%.2f€".format(comanda.detalles.sumOf { it.precioUnitario * it.cantidad }),
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.ExtraBold
+                        ),
+                        color = Color.Black
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
                 Text(
-                    "TOTAL",
-                    style = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.ExtraBold),
-                    color = Color.Black
+                    "¡GRACIAS POR SU VISITA!",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = Color.Black,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
                 )
+
                 Text(
-                    "%.2f€".format(comanda.detalles.sumOf { it.precioUnitario * it.cantidad }),
-                    style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.ExtraBold),
-                    color = Color.Black
+                    "*** IVA INCLUIDO ***",
+                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
+                    color = Color.Gray,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
                 )
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            Text(
-                "¡GRACIAS POR SU VISITA!",
-                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold),
-                color = Color.Black,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-            
-            Text(
-                "*** IVA INCLUIDO ***",
-                style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
-                color = Color.Gray,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
+                Spacer(modifier = Modifier.height(24.dp))
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = onClose,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = BgDark, contentColor = Color.White),
-                shape = RoundedCornerShape(0.dp)
-            ) {
-                Text("CERRAR Y VOLVER", style = LuxuryTypography.labelLarge)
+                Button(
+                    onClick = onClose,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(0.dp)
+                ) {
+                    Text("CERRAR Y VOLVER", style = LuxuryTypography.labelLarge)
+                }
             }
         }
     }
