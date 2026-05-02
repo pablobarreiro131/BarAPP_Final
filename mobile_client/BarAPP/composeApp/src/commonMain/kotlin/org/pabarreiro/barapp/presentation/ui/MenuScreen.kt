@@ -33,8 +33,19 @@ fun MenuScreen(mesaId: Long, onBack: () -> Unit, viewModel: MenuViewModel = koin
 
     var showComandaSheet by remember { mutableStateOf(false) }
     var showPayDialog by remember { mutableStateOf(false) }
+    var showTicket by remember { mutableStateOf(false) }
+    var lastComanda by remember { mutableStateOf<Comanda?>(null) }
 
     val mesaLabel = uiState.mesa?.let { "MESA ${it.numeroMesa}" } ?: "MESA $mesaId"
+
+    LaunchedEffect(uiState.pagada) {
+        if (uiState.pagada) {
+            if (lastComanda == null) {
+                lastComanda = uiState.activeComanda
+            }
+            showTicket = true
+        }
+    }
 
     Scaffold(
             topBar = {
@@ -174,8 +185,8 @@ fun MenuScreen(mesaId: Long, onBack: () -> Unit, viewModel: MenuViewModel = koin
                             onClick = {
                                 showPayDialog = false
                                 showComandaSheet = false
+                                lastComanda = uiState.activeComanda
                                 viewModel.pagarComanda()
-                                onBack()
                             },
                             colors =
                                     ButtonDefaults.buttonColors(
@@ -192,6 +203,27 @@ fun MenuScreen(mesaId: Long, onBack: () -> Unit, viewModel: MenuViewModel = koin
                     ) { Text("CANCELAR", style = LuxuryTypography.labelSmall) }
                 }
         )
+    }
+
+    if (showTicket && lastComanda != null) {
+        androidx.compose.ui.window.Dialog(
+                onDismissRequest = {},
+                properties =
+                        androidx.compose.ui.window.DialogProperties(
+                                usePlatformDefaultWidth = false,
+                                dismissOnBackPress = false,
+                                dismissOnClickOutside = false
+                        )
+        ) {
+            TicketView(
+                    comanda = lastComanda!!,
+                    mesa = uiState.mesa,
+                    onClose = {
+                        showTicket = false
+                        onBack()
+                    }
+            )
+        }
     }
 }
 

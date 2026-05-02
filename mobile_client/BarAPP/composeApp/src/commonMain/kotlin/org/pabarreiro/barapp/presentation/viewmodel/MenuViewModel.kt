@@ -20,7 +20,8 @@ data class MenuUiState(
         val activeComanda: Comanda? = null,
         val isLoading: Boolean = false,
         val isComandaActionLoading: Boolean = false,
-        val error: String? = null
+        val error: String? = null,
+        val pagada: Boolean = false
 )
 
 class MenuViewModel(
@@ -33,11 +34,19 @@ class MenuViewModel(
         private val repository: BarRepository
 ) : ViewModel() {
 
+    private data class ComandaState(
+        val activeComanda: Comanda?,
+        val isComandaActionLoading: Boolean,
+        val error: String?,
+        val pagada: Boolean
+    )
+
     private val _selectedCategoriaId = MutableStateFlow<Long?>(null)
     private val _mesaId = MutableStateFlow<Long?>(null)
     private val _mesa = MutableStateFlow<Mesa?>(null)
     private val _isComandaActionLoading = MutableStateFlow(false)
     private val _error = MutableStateFlow<String?>(null)
+    private val _pagada = MutableStateFlow(false)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<MenuUiState> =
@@ -55,22 +64,25 @@ class MenuViewModel(
                                     },
                                     _isComandaActionLoading,
                                     _error,
-                                    ::Triple
-                            ),
+                                    _pagada
+                            ) { activeComanda, isComandaActionLoading, error, pagada ->
+                                ComandaState(activeComanda, isComandaActionLoading, error, pagada)
+                            },
                             _mesa
                     ) {
                             (categorias, productos, selectedId),
-                            (activeComanda, isComandaActionLoading, error),
+                            comandaState,
                             mesa ->
                         MenuUiState(
                                 mesa = mesa,
                                 categorias = categorias,
                                 productos = productos,
                                 selectedCategoriaId = selectedId,
-                                activeComanda = activeComanda,
+                                activeComanda = comandaState.activeComanda,
                                 isLoading = false,
-                                isComandaActionLoading = isComandaActionLoading,
-                                error = error
+                                isComandaActionLoading = comandaState.isComandaActionLoading,
+                                error = comandaState.error,
+                                pagada = comandaState.pagada
                         )
                     }
                     .stateIn(
@@ -173,7 +185,9 @@ class MenuViewModel(
             _error.value = null
 
             val result = pagarComandaUseCase(comandaId)
-            if (!result.isSuccess) {
+            if (result.isSuccess) {
+                _pagada.value = true
+            } else {
                 _error.value = "Error al pagar comanda: ${result.exceptionOrNull()?.message}"
             }
 
