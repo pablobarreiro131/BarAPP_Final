@@ -9,6 +9,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 import '../styles/MenuPage.css';
 
@@ -17,18 +18,19 @@ const MenuPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('products');
-  
+
   const [newCat, setNewCat] = useState({ nombre: '', descripcion: '' });
-  const [newProd, setNewProd] = useState({ 
-    nombre: '', 
-    precio: '', 
-    categoriaId: '', 
-    stock: 0, 
-    imagenUrl: '', 
-    activo: true 
+  const [newProd, setNewProd] = useState({
+    nombre: '',
+    precio: '',
+    categoriaId: '',
+    stock: 0,
+    imagenUrl: '',
+    activo: true
   });
 
   const [editingItem, setEditingItem] = useState(null); // { type: 'product'|'category', data: {...} }
+  const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, type: null, id: null });
 
   const fetchData = async () => {
     try {
@@ -73,16 +75,33 @@ const MenuPage = () => {
     }
   };
 
-  const handleDeleteCategory = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar esta categoría? Los productos asociados podrían dar error.')) return;
+  const handleDeleteCategory = (id) => {
+    setConfirmDelete({ isOpen: true, type: 'category', id });
+  };
+
+  const handleDeleteProduct = (id) => {
+    setConfirmDelete({ isOpen: true, type: 'product', id });
+  };
+
+  const executeDelete = async () => {
+    const { type, id } = confirmDelete;
     try {
-      await apiClient.deleteCategoria(id);
-      if (editingItem?.type === 'category' && editingItem.data.id === id) {
-        setEditingItem(null);
+      if (type === 'category') {
+        await apiClient.deleteCategoria(id);
+        if (editingItem?.type === 'category' && editingItem.data.id === id) {
+          setEditingItem(null);
+        }
+      } else {
+        await apiClient.deleteProducto(id);
+        if (editingItem?.type === 'product' && editingItem.data.id === id) {
+          setEditingItem(null);
+        }
       }
+      setConfirmDelete({ isOpen: false, type: null, id: null });
       fetchData();
     } catch (err) {
       alert(err.message);
+      setConfirmDelete({ isOpen: false, type: null, id: null });
     }
   };
 
@@ -96,13 +115,13 @@ const MenuPage = () => {
         stock: parseInt(newProd.stock),
         categoriaId: parseInt(newProd.categoriaId)
       });
-      setNewProd({ 
-        nombre: '', 
-        precio: '', 
-        categoriaId: '', 
-        stock: 0, 
-        imagenUrl: '', 
-        activo: true 
+      setNewProd({
+        nombre: '',
+        precio: '',
+        categoriaId: '',
+        stock: 0,
+        imagenUrl: '',
+        activo: true
       });
       fetchData();
     } catch (err) {
@@ -126,30 +145,19 @@ const MenuPage = () => {
     }
   };
 
-  const handleDeleteProduct = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
-    try {
-      await apiClient.deleteProducto(id);
-      if (editingItem?.type === 'product' && editingItem.data.id === id) {
-        setEditingItem(null);
-      }
-      fetchData();
-    } catch (err) {
-      alert(err.message);
-    }
-  };
+
 
   return (
     <div className="menu-container">
       <div className="menu-tabs">
-        <button 
+        <button
           className={activeTab === 'products' ? 'tab-btn active' : 'tab-btn'}
           onClick={() => { setActiveTab('products'); setEditingItem(null); }}
         >
           <FastfoodIcon />
           Productos
         </button>
-        <button 
+        <button
           className={activeTab === 'categories' ? 'tab-btn active' : 'tab-btn'}
           onClick={() => { setActiveTab('categories'); setEditingItem(null); }}
         >
@@ -164,35 +172,35 @@ const MenuPage = () => {
             <div className="section-header">
               {activeTab === 'categories' ? <CategoryIcon /> : <FastfoodIcon />}
               <h3>
-                {editingItem 
-                  ? (activeTab === 'categories' ? 'Editar Categoría' : 'Editar Producto') 
+                {editingItem
+                  ? (activeTab === 'categories' ? 'Editar Categoría' : 'Editar Producto')
                   : (activeTab === 'categories' ? 'Nueva Categoría' : 'Nuevo Producto')}
               </h3>
             </div>
-            
+
             <div className="form-container-inner" key={activeTab}>
               {activeTab === 'categories' ? (
                 <form onSubmit={editingItem ? handleUpdateCategory : handleCreateCategory} className="full-form">
                   <div className="input-group">
                     <label>Nombre de la Categoría</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder="Ej: Bebidas, Raciones..."
                       value={editingItem ? editingItem.data.nombre : newCat.nombre}
-                      onChange={(e) => editingItem ? 
-                        setEditingItem({...editingItem, data: {...editingItem.data, nombre: e.target.value}}) : 
-                        setNewCat({...newCat, nombre: e.target.value})}
+                      onChange={(e) => editingItem ?
+                        setEditingItem({ ...editingItem, data: { ...editingItem.data, nombre: e.target.value } }) :
+                        setNewCat({ ...newCat, nombre: e.target.value })}
                       required
                     />
                   </div>
                   <div className="input-group">
                     <label>Descripción (Opcional)</label>
-                    <textarea 
+                    <textarea
                       placeholder="Breve descripción de la categoría..."
                       value={editingItem ? (editingItem.data.descripcion || '') : newCat.descripcion}
-                      onChange={(e) => editingItem ? 
-                        setEditingItem({...editingItem, data: {...editingItem.data, descripcion: e.target.value}}) : 
-                        setNewCat({...newCat, descripcion: e.target.value})}
+                      onChange={(e) => editingItem ?
+                        setEditingItem({ ...editingItem, data: { ...editingItem.data, descripcion: e.target.value } }) :
+                        setNewCat({ ...newCat, descripcion: e.target.value })}
                       rows="3"
                     />
                   </div>
@@ -212,23 +220,23 @@ const MenuPage = () => {
                   <div className="input-row">
                     <div className="input-group">
                       <label>Nombre del Producto</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Ej: Caña, Hamburguesa..."
                         value={editingItem ? editingItem.data.nombre : newProd.nombre}
-                        onChange={(e) => editingItem ? 
-                          setEditingItem({...editingItem, data: {...editingItem.data, nombre: e.target.value}}) : 
-                          setNewProd({...newProd, nombre: e.target.value})}
+                        onChange={(e) => editingItem ?
+                          setEditingItem({ ...editingItem, data: { ...editingItem.data, nombre: e.target.value } }) :
+                          setNewProd({ ...newProd, nombre: e.target.value })}
                         required
                       />
                     </div>
                     <div className="input-group">
                       <label>Categoría</label>
-                      <select 
+                      <select
                         value={editingItem ? editingItem.data.categoriaId : newProd.categoriaId}
-                        onChange={(e) => editingItem ? 
-                          setEditingItem({...editingItem, data: {...editingItem.data, categoriaId: e.target.value}}) : 
-                          setNewProd({...newProd, categoriaId: e.target.value})}
+                        onChange={(e) => editingItem ?
+                          setEditingItem({ ...editingItem, data: { ...editingItem.data, categoriaId: e.target.value } }) :
+                          setNewProd({ ...newProd, categoriaId: e.target.value })}
                         required
                       >
                         <option value="">Seleccionar...</option>
@@ -242,14 +250,14 @@ const MenuPage = () => {
                   <div className="input-row">
                     <div className="input-group">
                       <label>Precio (€)</label>
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         step="0.01"
                         placeholder="0.00"
                         value={editingItem ? editingItem.data.precio : newProd.precio}
-                        onChange={(e) => editingItem ? 
-                          setEditingItem({...editingItem, data: {...editingItem.data, precio: e.target.value}}) : 
-                          setNewProd({...newProd, precio: e.target.value})}
+                        onChange={(e) => editingItem ?
+                          setEditingItem({ ...editingItem, data: { ...editingItem.data, precio: e.target.value } }) :
+                          setNewProd({ ...newProd, precio: e.target.value })}
                         required
                       />
                     </div>
@@ -257,12 +265,12 @@ const MenuPage = () => {
                       <label>Stock</label>
                       <div className="stock-input">
                         <InventoryIcon />
-                        <input 
-                          type="number" 
+                        <input
+                          type="number"
                           value={editingItem ? editingItem.data.stock : newProd.stock}
-                          onChange={(e) => editingItem ? 
-                            setEditingItem({...editingItem, data: {...editingItem.data, stock: e.target.value}}) : 
-                            setNewProd({...newProd, stock: e.target.value})}
+                          onChange={(e) => editingItem ?
+                            setEditingItem({ ...editingItem, data: { ...editingItem.data, stock: e.target.value } }) :
+                            setNewProd({ ...newProd, stock: e.target.value })}
                         />
                       </div>
                     </div>
@@ -272,32 +280,32 @@ const MenuPage = () => {
                     <label>URL de Imagen</label>
                     <div className="image-input">
                       <ImageIcon />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="https://..."
                         value={editingItem ? (editingItem.data.imagenUrl || '') : newProd.imagenUrl}
-                        onChange={(e) => editingItem ? 
-                          setEditingItem({...editingItem, data: {...editingItem.data, imagenUrl: e.target.value}}) : 
-                          setNewProd({...newProd, imagenUrl: e.target.value})}
+                        onChange={(e) => editingItem ?
+                          setEditingItem({ ...editingItem, data: { ...editingItem.data, imagenUrl: e.target.value } }) :
+                          setNewProd({ ...newProd, imagenUrl: e.target.value })}
                       />
                     </div>
                   </div>
 
                   {(editingItem ? editingItem.data.imagenUrl : newProd.imagenUrl) && (
                     <div className="image-preview">
-                      <img src={editingItem ? editingItem.data.imagenUrl : newProd.imagenUrl} alt="Preview" onError={(e) => e.target.style.display='none'} />
+                      <img src={editingItem ? editingItem.data.imagenUrl : newProd.imagenUrl} alt="Preview" onError={(e) => e.target.style.display = 'none'} />
                     </div>
                   )}
 
                   <div className="input-group checkbox-group">
                     <label className="switch-label">
                       <span>Producto Activo</span>
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={editingItem ? editingItem.data.activo : newProd.activo}
-                        onChange={(e) => editingItem ? 
-                          setEditingItem({...editingItem, data: {...editingItem.data, activo: e.target.checked}}) : 
-                          setNewProd({...newProd, activo: e.target.checked})}
+                        onChange={(e) => editingItem ?
+                          setEditingItem({ ...editingItem, data: { ...editingItem.data, activo: e.target.checked } }) :
+                          setNewProd({ ...newProd, activo: e.target.checked })}
                       />
                       <span className="slider"></span>
                     </label>
@@ -323,7 +331,7 @@ const MenuPage = () => {
               <h3>{activeTab === 'categories' ? 'Categorías Existentes' : 'Carta de Productos'}</h3>
               <span className="badge">{activeTab === 'categories' ? categories.length : products.length}</span>
             </div>
-            
+
             {activeTab === 'categories' ? (
               <div className="categories-grid">
                 {categories.map(cat => (
@@ -376,8 +384,8 @@ const MenuPage = () => {
                         <span className={`stock-badge ${prod.stock < 10 ? 'low' : ''}`}>
                           Stock: {prod.stock}
                         </span>
-                        {prod.activo ? 
-                          <CheckCircleIcon className="status-icon active" /> : 
+                        {prod.activo ?
+                          <CheckCircleIcon className="status-icon active" /> :
                           <CancelIcon className="status-icon inactive" />
                         }
                       </div>
@@ -389,6 +397,16 @@ const MenuPage = () => {
           </section>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmDelete.isOpen}
+        title={confirmDelete.type === 'category' ? 'Eliminar Categoría' : 'Eliminar Producto'}
+        message={confirmDelete.type === 'category'
+          ? '¿Estás seguro de eliminar esta categoría? Los productos asociados podrían dar error.'
+          : '¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.'}
+        onConfirm={executeDelete}
+        onCancel={() => setConfirmDelete({ isOpen: false, type: null, id: null })}
+      />
     </div>
   );
 };

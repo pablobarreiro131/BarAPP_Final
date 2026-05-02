@@ -6,6 +6,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import ShieldIcon from '@mui/icons-material/Shield';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 import '../styles/StaffPage.css';
 
@@ -22,6 +23,7 @@ const StaffPage = () => {
     nombre: '',
     rol: 'camarero'
   });
+  const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, id: null });
 
   const fetchStaff = async () => {
     try {
@@ -62,13 +64,19 @@ const StaffPage = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar este usuario? Se borrará también de la autenticación.')) return;
+  const handleDelete = (id) => {
+    setConfirmDelete({ isOpen: true, id });
+  };
+
+  const executeDelete = async () => {
+    const id = confirmDelete.id;
     try {
       await apiClient.deletePerfil(id);
+      setConfirmDelete({ isOpen: false, id: null });
       fetchStaff();
     } catch (err) {
       alert('Error: ' + err.message);
+      setConfirmDelete({ isOpen: false, id: null });
     }
   };
 
@@ -191,6 +199,14 @@ const StaffPage = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog 
+        isOpen={confirmDelete.isOpen}
+        title="Eliminar Personal"
+        message="¿Estás seguro de eliminar este usuario? Se borrará también de la autenticación de forma permanente."
+        onConfirm={executeDelete}
+        onCancel={() => setConfirmDelete({ isOpen: false, id: null })}
+      />
     </div>
   );
 };

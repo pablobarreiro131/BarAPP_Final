@@ -4,6 +4,7 @@ import AddIcon from '@mui/icons-material/Add';
 import TableBarIcon from '@mui/icons-material/TableBar';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import EditIcon from '@mui/icons-material/Edit';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 import '../styles/TablesPage.css';
 
@@ -14,6 +15,7 @@ const TablesPage = () => {
   const [newTableCapacity, setNewTableCapacity] = useState('4');
   
   const [editingMesa, setEditingMesa] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, id: null });
 
   const fetchTables = async () => {
     try {
@@ -63,17 +65,23 @@ const TablesPage = () => {
     }
   };
 
-  const handleDeleteMesa = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar esta mesa?')) return;
+  const handleDeleteMesa = (id) => {
+    setConfirmDelete({ isOpen: true, id });
+  };
+
+  const executeDeleteMesa = async () => {
+    const id = confirmDelete.id;
     try {
       await apiClient.deleteMesa(id);
       if (editingMesa?.id === id) {
         setEditingMesa(null);
         setNewTableCapacity('4');
       }
+      setConfirmDelete({ isOpen: false, id: null });
       fetchTables();
     } catch (err) {
       alert('Error: ' + err.message);
+      setConfirmDelete({ isOpen: false, id: null });
     }
   };
 
@@ -159,6 +167,14 @@ const TablesPage = () => {
           ))}
         </div>
       )}
+
+      <ConfirmDialog 
+        isOpen={confirmDelete.isOpen}
+        title="Eliminar Mesa"
+        message="¿Estás seguro de eliminar esta mesa? Esta acción no se puede deshacer."
+        onConfirm={executeDeleteMesa}
+        onCancel={() => setConfirmDelete({ isOpen: false, id: null })}
+      />
     </div>
   );
 };
