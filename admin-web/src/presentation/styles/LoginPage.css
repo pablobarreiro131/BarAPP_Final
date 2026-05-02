@@ -62,13 +62,41 @@ h2 {
 .input-icon {
   position: absolute;
   left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--text-muted);
+  font-size: 18px;
+  pointer-events: none;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: all var(--transition-fast);
+}
+
+.password-toggle:hover {
+  color: var(--primary);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.password-toggle svg {
   font-size: 18px;
 }
 
 .login-form input {
   width: 100%;
-  padding: 14px 16px 14px 48px;
+  padding: 14px 44px 14px 48px;
   background: transparent;
   border: 1px solid var(--border-color);
   border-radius: 0;
@@ -81,6 +109,11 @@ h2 {
 
 .login-form input:focus {
   border-color: var(--primary);
+}
+
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
 }
 
 .login-form input::placeholder {

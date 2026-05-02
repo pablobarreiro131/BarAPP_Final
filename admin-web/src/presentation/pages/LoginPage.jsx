@@ -3,12 +3,15 @@ import { supabase } from '../../data/supabaseClient';
 import { apiClient } from '../../data/apiClient';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 import '../styles/LoginPage.css';
 
 const LoginPage = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -74,16 +77,23 @@ const LoginPage = ({ onLoginSuccess }) => {
               disabled={loading}
             />
           </div>
-          <div className="input-group">
+           <div className="input-group">
             <LockOutlinedIcon className="input-icon" />
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
             />
+            <button 
+              type="button" 
+              className="password-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <VisibilityOff /> : <Visibility />}
+            </button>
           </div>
           <button type="submit" className="login-btn" disabled={loading}>
             {loading ? 'Iniciando sesión...' : 'Entrar'}

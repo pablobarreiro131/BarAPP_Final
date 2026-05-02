@@ -204,7 +204,7 @@ const MenuPage = () => {
                       rows="3"
                     />
                   </div>
-                  <div className="form-actions">
+                  <div className={`form-actions ${!editingItem ? 'centered' : ''}`}>
                     <button type="submit" className="add-btn-full">
                       {editingItem ? 'Guardar Cambios' : 'Crear Categoría'}
                     </button>
@@ -311,7 +311,7 @@ const MenuPage = () => {
                     </label>
                   </div>
 
-                  <div className="form-actions">
+                  <div className={`form-actions ${!editingItem ? 'centered' : ''}`}>
                     <button type="submit" className="add-btn-full">
                       {editingItem ? 'Guardar Cambios' : 'Añadir al Menú'}
                     </button>
