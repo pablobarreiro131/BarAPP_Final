@@ -33,13 +33,20 @@ fun ComandaScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showPayDialog by remember { mutableStateOf(false) }
+    var showTicket by remember { mutableStateOf(false) }
+    var lastComanda by remember { mutableStateOf<org.pabarreiro.barapp.domain.model.Comanda?>(null) }
 
     LaunchedEffect(mesaId) {
         viewModel.setMesaId(mesaId)
     }
 
     LaunchedEffect(uiState.pagada) {
-        if (uiState.pagada) onBack()
+        if (uiState.pagada) {
+            if (lastComanda == null) {
+                lastComanda = uiState.comanda
+            }
+            showTicket = true
+        }
     }
 
     val mesaLabel = uiState.mesa?.let { "MESA ${it.numeroMesa}" } ?: "COMANDA"
@@ -202,6 +209,7 @@ fun ComandaScreen(
                 Button(
                     onClick = {
                         showPayDialog = false
+                        lastComanda = uiState.comanda
                         viewModel.pagarComanda()
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -222,6 +230,26 @@ fun ComandaScreen(
                 }
             }
         )
+    }
+
+    if (showTicket && lastComanda != null) {
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = {},
+            properties = androidx.compose.ui.window.DialogProperties(
+                usePlatformDefaultWidth = false,
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false
+            )
+        ) {
+            TicketView(
+                comanda = lastComanda!!,
+                mesa = uiState.mesa,
+                onClose = {
+                    showTicket = false
+                    onBack()
+                }
+            )
+        }
     }
 }
 
