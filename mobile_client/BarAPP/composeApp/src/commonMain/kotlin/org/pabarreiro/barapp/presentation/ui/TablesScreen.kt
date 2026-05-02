@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -31,6 +32,7 @@ import org.pabarreiro.barapp.presentation.viewmodel.TablesViewModel
 fun TablesScreen(
     onTableFree: (Long) -> Unit,
     onTableOccupied: (Long) -> Unit,
+    onLogout: () -> Unit,
     viewModel: TablesViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -48,6 +50,9 @@ fun TablesScreen(
                 actions = {
                     IconButton(onClick = { viewModel.refreshTables() }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Recargar", tint = PrimaryIvory)
+                    }
+                    IconButton(onClick = { viewModel.logout(onLogout) }) {
+                        Icon(Icons.Default.Logout, contentDescription = "Cerrar Sesión", tint = PrimaryIvory)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

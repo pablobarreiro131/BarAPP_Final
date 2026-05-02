@@ -43,4 +43,11 @@ class TablesViewModel(
             }
         }
     }
+
+    fun logout(onLoggedOut: () -> Unit) {
+        viewModelScope.launch {
+            repository.logout()
+            onLoggedOut()
+        }
+    }
 }

@@ -40,6 +40,11 @@ fun App() {
                         },
                         onTableOccupied = { mesaId ->
                             navController.navigate("comanda/$mesaId")
+                        },
+                        onLogout = {
+                            navController.navigate("login") {
+                                popUpTo("tables") { inclusive = true }
+                            }
                         }
                     )
                 }

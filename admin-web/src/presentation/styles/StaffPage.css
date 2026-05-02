@@ -236,7 +236,7 @@
   background: var(--bg-surface);
 }
 
-.form-actions {
+.modal-card .form-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;

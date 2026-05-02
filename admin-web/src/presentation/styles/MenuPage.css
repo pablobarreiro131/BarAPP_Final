@@ -40,6 +40,7 @@
   gap: 12px;
   margin-bottom: 24px;
   color: var(--text-muted);
+  transition: color 0.4s ease;
 }
 
 .section-header h3 {
@@ -48,6 +49,7 @@
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--text-muted);
+  transition: color 0.4s ease;
 }
 
 .badge {
@@ -75,15 +77,22 @@
 
 .form-section {
   padding: 32px;
-  transition: all var(--transition-normal);
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   border: 1px solid transparent;
   animation: cardEntrance 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-origin: top center;
 }
 
 .form-section.editing-mode {
   border-color: var(--primary);
   background: rgba(232, 224, 212, 0.05);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(232, 224, 212, 0.08);
+  transform: scale(1.02);
+}
+
+.form-section.editing-mode .section-header,
+.form-section.editing-mode .section-header h3 {
+  color: var(--primary);
 }
 
 .full-form {
@@ -562,25 +571,26 @@ input:checked+.slider:before {
   margin-bottom: 4px;
 }
 
-.form-actions {
+.menu-container .form-actions {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 8px;
 }
 
-.form-actions.centered {
+.menu-container .form-actions.centered {
   display: block;
   text-align: center;
 }
 
-.form-actions.centered .add-btn-full {
+.menu-container .form-actions.centered .add-btn-full {
   display: inline-block;
   width: auto;
   min-width: 220px;
 }
 
 .cancel-btn-full {
+  width: 100%;
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-muted);
