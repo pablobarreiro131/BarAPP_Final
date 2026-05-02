@@ -16,6 +16,7 @@ const App = () => {
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
+        localStorage.setItem('supabase_token', session.access_token);
         try {
           const profile = await apiClient.getMe();
           setIsAdmin(profile?.rol === 'admin');
@@ -36,6 +37,7 @@ const App = () => {
         localStorage.removeItem('isAdmin');
         localStorage.removeItem('supabase_token');
       } else if (event === 'SIGNED_IN' && session) {
+        localStorage.setItem('supabase_token', session.access_token);
         try {
           const profile = await apiClient.getMe();
           const adminStatus = profile?.rol === 'admin';

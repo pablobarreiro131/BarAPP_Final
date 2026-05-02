@@ -18,37 +18,25 @@ const LoginPage = ({ onLoginSuccess }) => {
     setError('');
 
     try {
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('sb-')) localStorage.removeItem(key);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password
       });
+  
+      if (error) throw error;
+  
+      const session = data.session;
+      if (!session) throw new Error('No se pudo iniciar sesión');
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
-      const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': supabaseKey,
-        },
-        body: JSON.stringify({ email: email.trim(), password }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.msg || 'Correo o contraseña incorrectos');
-      }
-
-      const authData = await response.json();
-      
-      localStorage.setItem('supabase_token', authData.access_token);
-
+      localStorage.setItem('supabase_token', session.access_token);
+  
       const profile = await apiClient.getMe();
-
+  
       if (profile && profile.rol === 'admin') {
         localStorage.setItem('isAdmin', 'true');
         onLoginSuccess();
       } else {
+        await supabase.auth.signOut();
         localStorage.removeItem('supabase_token');
         throw new Error('No tienes permisos de administrador para acceder aquí.');
       }
