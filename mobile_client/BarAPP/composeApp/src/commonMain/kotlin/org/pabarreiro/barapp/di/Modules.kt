@@ -79,12 +79,14 @@ val useCaseModule = module {
     single { GetActiveComandaUseCase(get()) }
     single { CreateComandaUseCase(get()) }
     single { AddDetalleUseCase(get()) }
+    single { RemoveDetalleUseCase(get()) }
     single { PagarComandaUseCase(get()) }
 }
 
 val viewModelModule = module {
     viewModel { TablesViewModel(get(), get()) }
-    viewModel { MenuViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { MenuViewModel(get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { ComandaViewModel(get(), get(), get(), get()) }
     viewModel { LoginViewModel(get()) }
 }
 

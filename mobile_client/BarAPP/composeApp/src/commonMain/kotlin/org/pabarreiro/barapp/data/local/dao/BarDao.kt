@@ -10,6 +10,9 @@ interface BarDao {
     @Query("SELECT * FROM mesas")
     fun getMesas(): Flow<List<MesaEntity>>
 
+    @Query("SELECT * FROM mesas WHERE id = :id")
+    suspend fun getMesaById(id: Long): MesaEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMesas(mesas: List<MesaEntity>)
 
@@ -34,6 +37,9 @@ interface BarDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertComanda(comanda: ComandaEntity)
 
+    @Query("DELETE FROM comandas WHERE mesaId = :mesaId")
+    suspend fun deleteComandasByMesa(mesaId: Long)
+
     @Query("SELECT * FROM comandas WHERE isSynced = 0")
     suspend fun getPendingComandas(): List<ComandaEntity>
 
@@ -43,6 +49,9 @@ interface BarDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDetalle(detalle: DetalleComandaEntity)
+
+    @Query("DELETE FROM detalles_comanda WHERE id = :detalleId")
+    suspend fun deleteDetalleById(detalleId: Long)
     
     @Query("SELECT * FROM detalles_comanda WHERE isSynced = 0")
     suspend fun getPendingDetalles(): List<DetalleComandaEntity>

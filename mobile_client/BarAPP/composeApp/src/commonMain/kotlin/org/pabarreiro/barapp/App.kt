@@ -1,6 +1,5 @@
 package org.pabarreiro.barapp
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -8,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import org.koin.compose.KoinContext
+import org.pabarreiro.barapp.presentation.ui.ComandaScreen
 import org.pabarreiro.barapp.presentation.ui.LoginScreen
 import org.pabarreiro.barapp.presentation.ui.MenuScreen
 import org.pabarreiro.barapp.presentation.ui.TablesScreen
@@ -18,7 +18,7 @@ fun App() {
     KoinContext {
         BarAppTheme {
             val navController = rememberNavController()
-            
+
             NavHost(
                 navController = navController,
                 startDestination = "login"
@@ -32,23 +32,40 @@ fun App() {
                         }
                     )
                 }
-                
+
                 composable("tables") {
                     TablesScreen(
-                        onTableSelected = { tableId ->
-                            navController.navigate("menu/$tableId")
+                        onTableFree = { mesaId ->
+                            navController.navigate("menu/$mesaId")
+                        },
+                        onTableOccupied = { mesaId ->
+                            navController.navigate("comanda/$mesaId")
                         }
                     )
                 }
-                
+
                 composable(
-                    route = "menu/{tableId}",
-                    arguments = listOf(navArgument("tableId") { type = NavType.LongType })
+                    route = "menu/{mesaId}",
+                    arguments = listOf(navArgument("mesaId") { type = NavType.LongType })
                 ) { backStackEntry ->
-                    val tableId = backStackEntry.arguments?.getLong("tableId") ?: 0L
+                    val mesaId = backStackEntry.arguments?.getLong("mesaId") ?: 0L
                     MenuScreen(
-                        mesaId = tableId,
+                        mesaId = mesaId,
                         onBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable(
+                    route = "comanda/{mesaId}",
+                    arguments = listOf(navArgument("mesaId") { type = NavType.LongType })
+                ) { backStackEntry ->
+                    val mesaId = backStackEntry.arguments?.getLong("mesaId") ?: 0L
+                    ComandaScreen(
+                        mesaId = mesaId,
+                        onBack = { navController.popBackStack() },
+                        onAddProducts = {
+                            navController.navigate("menu/$mesaId")
+                        }
                     )
                 }
             }

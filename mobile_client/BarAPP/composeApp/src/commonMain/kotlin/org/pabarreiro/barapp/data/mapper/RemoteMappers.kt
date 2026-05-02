@@ -23,7 +23,8 @@ fun DetalleComandaDTO.toDomain() = DetalleComanda(
     comandaId = comandaId ?: "",
     productoId = productoId,
     cantidad = cantidad,
-    precioUnitario = precioUnitario
+    precioUnitario = precioUnitario,
+    nombreProducto = producto?.nombre
 )
 
 fun ComandaDTO.toDomain() = Comanda(
@@ -38,7 +39,7 @@ fun ComandaDTO.toDomain() = Comanda(
 )
 
 fun Comanda.toDTO() = ComandaDTO(
-    id = id,
+    id = if (id.startsWith("temp-")) null else id,
     mesaId = mesaId,
     camareroId = camareroId,
     fechaApertura = fechaApertura.toString(),

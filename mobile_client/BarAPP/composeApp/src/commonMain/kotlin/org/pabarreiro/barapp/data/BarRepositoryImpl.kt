@@ -20,7 +20,17 @@ class BarRepositoryImpl(
 ) : BarRepository {
 
     private val _currentUser = MutableStateFlow<Perfil?>(null)
-    override suspend fun getCurrentUser(): Flow<Perfil?> = _currentUser.asStateFlow()
+    override suspend fun getCurrentUser(): Flow<Perfil?> = flow {
+        if (_currentUser.value == null) {
+            try {
+                val perfil = remoteDataSource.getMe().toDomain()
+                _currentUser.value = perfil
+            } catch (e: Exception) {
+                println("[BarApp] [Repository] Error obteniendo perfil actual: ${e.message}")
+            }
+        }
+        emitAll(_currentUser)
+    }
 
     override suspend fun login(email: String, password: String): Result<Unit> = try {
         println("[BarApp] [Repository] Iniciando login en Supabase para $email")
@@ -85,10 +95,26 @@ class BarRepositoryImpl(
     override fun getComandasActivas(mesaId: Long): Flow<List<Comanda>> = 
         localDataSource.getComandasActivas(mesaId)
 
+    override suspend fun syncComandasMesa(mesaId: Long): Result<Unit> = try {
+        println("[BarApp] [Repository] Sincronizando comandas para la mesa $mesaId...")
+        val remoteComandas = remoteDataSource.getComandasByMesa(mesaId).map { it.toDomain() }
+        
+        localDataSource.deleteComandasByMesa(mesaId)
+
+        remoteComandas.forEach { comanda ->
+            localDataSource.saveComanda(comanda, isSynced = true)
+            comanda.detalles.forEach { detalle ->
+                localDataSource.saveDetalle(detalle, isSynced = true)
+            }
+        }
+        Result.success(Unit)
+    } catch (e: Exception) {
+        println("[BarApp] [Repository] Error sincronizando comandas de mesa $mesaId: ${e.message}")
+        Result.failure(e)
+    }
+
     override suspend fun createComanda(comanda: Comanda): Result<Comanda> = try {
         println("[BarApp] [Repository] Creando comanda local para mesa ${comanda.mesaId}")
-
-        localDataSource.saveComanda(comanda, isSynced = false)
 
         try {
             println("[BarApp] [Repository] Intentando sincronizar comanda con el servidor")
@@ -96,10 +122,12 @@ class BarRepositoryImpl(
             localDataSource.saveComanda(synced, isSynced = true)
             localDataSource.markAsSynced(synced.id)
             println("[BarApp] [Repository] Comanda sincronizada exitosamente, ID: ${synced.id}")
+            syncMesas()
             Result.success(synced)
         } catch (e: Exception) {
-            println("[BarApp] [Repository] No se pudo sincronizar la comanda, se mantiene en local. Error: ${e.message}")
-            Result.success(comanda)
+            println("[BarApp] [Repository] Error sincronizando comanda: ${e.message}")
+
+            Result.failure(e)
         }
     } catch (e: Exception) {
         println("[BarApp] [Repository] Error crítico creando comanda: ${e.message}")
@@ -107,25 +135,40 @@ class BarRepositoryImpl(
     }
 
     override suspend fun addDetalleAComanda(comandaId: String, detalle: DetalleComanda): Result<DetalleComanda> = try {
-        localDataSource.saveDetalle(detalle, isSynced = false)
         try {
             val synced = remoteDataSource.addDetalle(comandaId, detalle.toDTO()).toDomain()
             localDataSource.saveDetalle(synced, isSynced = true)
             Result.success(synced)
         } catch (e: Exception) {
-            Result.success(detalle)
+            println("[BarApp] [Repository] Error añadiendo detalle: ${e.message}")
+            Result.failure(e)
         }
     } catch (e: Exception) {
         Result.failure(e)
     }
 
     override suspend fun pagarComanda(comandaId: String): Result<Unit> = try {
-        remoteDataSource.pagareComanda(comandaId)
-        // Update local state if needed
+        val comandaPagada = remoteDataSource.pagareComanda(comandaId).toDomain()
+        localDataSource.saveComanda(comandaPagada, isSynced = true)
+       syncMesas()
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
     }
+
+    override suspend fun deleteDetalleFromComanda(comandaId: String, detalleId: Long, mesaId: Long): Result<Unit> = try {
+        remoteDataSource.deleteDetalle(comandaId, detalleId)
+        localDataSource.deleteDetalle(detalleId)
+        syncComandasMesa(mesaId)
+        Result.success(Unit)
+    } catch (e: Exception) {
+        println("[BarApp] [Repository] Error eliminando detalle $detalleId: ${e.message}")
+        try { localDataSource.deleteDetalle(detalleId) } catch (_: Exception) {}
+        Result.failure(e)
+    }
+
+    override suspend fun getMesa(mesaId: Long): Mesa? =
+        localDataSource.getMesaById(mesaId)
 
     override suspend fun syncPendingOrders(): Result<Unit> = try {
         val pendingComandas = localDataSource.getPendingComandas()

@@ -17,6 +17,9 @@ class LocalDataSourceImpl(private val barDao: BarDao) : LocalDataSource {
         barDao.insertMesas(mesas.map { it.toEntity() })
     }
 
+    override suspend fun getMesaById(id: Long): Mesa? =
+        barDao.getMesaById(id)?.toDomain()
+
     override fun getCategorias(): Flow<List<Categoria>> = 
         barDao.getCategorias().map { list -> list.map { it.toDomain() } }
 
@@ -33,8 +36,16 @@ class LocalDataSourceImpl(private val barDao: BarDao) : LocalDataSource {
 
     override fun getComandasActivas(mesaId: Long): Flow<List<Comanda>> {
         return barDao.getComandaActivaByMesa(mesaId).flatMapLatest { comandaEntities ->
-
-            kotlinx.coroutines.flow.flowOf(comandaEntities.map { it.toDomain() })
+            if (comandaEntities.isEmpty()) {
+                kotlinx.coroutines.flow.flowOf(emptyList())
+            } else {
+                val flows = comandaEntities.map { comandaEntity ->
+                    barDao.getDetallesByComanda(comandaEntity.id).map { detallesEntities ->
+                        comandaEntity.toDomain(detallesEntities.map { it.toDomain() })
+                    }
+                }
+                kotlinx.coroutines.flow.combine(flows) { it.toList() }
+            }
         }
     }
 
@@ -42,11 +53,19 @@ class LocalDataSourceImpl(private val barDao: BarDao) : LocalDataSource {
         barDao.insertComanda(comanda.toEntity(isSynced))
     }
 
+    override suspend fun deleteComandasByMesa(mesaId: Long) {
+        barDao.deleteComandasByMesa(mesaId)
+    }
+
     override suspend fun getPendingComandas(): List<Comanda> =
         barDao.getPendingComandas().map { it.toDomain() }
 
     override suspend fun saveDetalle(detalle: DetalleComanda, isSynced: Boolean) {
         barDao.insertDetalle(detalle.toEntity(isSynced))
+    }
+
+    override suspend fun deleteDetalle(detalleId: Long) {
+        barDao.deleteDetalleById(detalleId)
     }
 
     override suspend fun getPendingDetalles(): List<DetalleComanda> =

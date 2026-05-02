@@ -7,11 +7,13 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.pabarreiro.barapp.domain.model.Categoria
 import org.pabarreiro.barapp.domain.model.Comanda
+import org.pabarreiro.barapp.domain.model.Mesa
 import org.pabarreiro.barapp.domain.model.Producto
 import org.pabarreiro.barapp.domain.repository.BarRepository
 import org.pabarreiro.barapp.domain.usecase.*
 
 data class MenuUiState(
+    val mesa: Mesa? = null,
     val categorias: List<Categoria> = emptyList(),
     val productos: List<Producto> = emptyList(),
     val selectedCategoriaId: Long? = null,
@@ -27,11 +29,13 @@ class MenuViewModel(
     private val createComandaUseCase: CreateComandaUseCase,
     private val addDetalleUseCase: AddDetalleUseCase,
     private val pagarComandaUseCase: PagarComandaUseCase,
+    private val removeDetalleUseCase: RemoveDetalleUseCase,
     private val repository: BarRepository
 ) : ViewModel() {
 
     private val _selectedCategoriaId = MutableStateFlow<Long?>(null)
     private val _mesaId = MutableStateFlow<Long?>(null)
+    private val _mesa = MutableStateFlow<Mesa?>(null)
     private val _isComandaActionLoading = MutableStateFlow(false)
     private val _error = MutableStateFlow<String?>(null)
 
@@ -50,9 +54,11 @@ class MenuViewModel(
             _isComandaActionLoading,
             _error,
             ::Triple
-        )
-    ) { (categorias, productos, selectedId), (activeComanda, isComandaActionLoading, error) ->
+        ),
+        _mesa
+    ) { (categorias, productos, selectedId), (activeComanda, isComandaActionLoading, error), mesa ->
         MenuUiState(
+            mesa = mesa,
             categorias = categorias,
             productos = productos,
             selectedCategoriaId = selectedId,
@@ -79,6 +85,13 @@ class MenuViewModel(
     fun setMesaId(mesaId: Long) {
         if (_mesaId.value != mesaId) {
             _mesaId.value = mesaId
+            viewModelScope.launch {
+                _mesa.value = repository.getMesa(mesaId)
+                val result = repository.syncComandasMesa(mesaId)
+                if (!result.isSuccess) {
+                    _error.value = "Error al sincronizar las comandas de la mesa: ${result.exceptionOrNull()?.message}"
+                }
+            }
         }
     }
 
@@ -116,6 +129,8 @@ class MenuViewModel(
                     val addResult = addDetalleUseCase(comandaId, producto.id, 1)
                     if (!addResult.isSuccess) {
                         _error.value = "Error añadiendo producto: ${addResult.exceptionOrNull()?.message}"
+                    } else {
+                        repository.syncComandasMesa(currentMesaId)
                     }
                 }
             } catch (e: Exception) {
@@ -123,6 +138,21 @@ class MenuViewModel(
             } finally {
                 _isComandaActionLoading.value = false
             }
+        }
+    }
+
+    fun removeDetalleFromOrder(detalleId: Long) {
+        val currentMesaId = _mesaId.value ?: return
+        val comandaId = uiState.value.activeComanda?.id ?: return
+
+        viewModelScope.launch {
+            _isComandaActionLoading.value = true
+            _error.value = null
+            val result = removeDetalleUseCase(comandaId, detalleId, currentMesaId)
+            if (!result.isSuccess) {
+                _error.value = "Error eliminando producto: ${result.exceptionOrNull()?.message}"
+            }
+            _isComandaActionLoading.value = false
         }
     }
 

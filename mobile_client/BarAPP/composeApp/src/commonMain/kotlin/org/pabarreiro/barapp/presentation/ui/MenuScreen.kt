@@ -9,16 +9,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
 import org.pabarreiro.barapp.domain.model.Categoria
 import org.pabarreiro.barapp.domain.model.Comanda
+import org.pabarreiro.barapp.domain.model.DetalleComanda
 import org.pabarreiro.barapp.domain.model.Producto
 import org.pabarreiro.barapp.presentation.ui.theme.*
 import org.pabarreiro.barapp.presentation.viewmodel.MenuViewModel
@@ -31,31 +32,32 @@ fun MenuScreen(
     viewModel: MenuViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     LaunchedEffect(mesaId) {
         viewModel.setMesaId(mesaId)
     }
 
     var showComandaSheet by remember { mutableStateOf(false) }
+    var showPayDialog by remember { mutableStateOf(false) }
+
+    val mesaLabel = uiState.mesa?.let { "MESA ${it.numeroMesa}" } ?: "MESA $mesaId"
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Text(
-                        "MESA $mesaId", 
+                        mesaLabel,
                         style = LuxuryTypography.titleLarge.copy(fontWeight = FontWeight.Medium),
                         color = PrimaryIvory
-                    ) 
+                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = PrimaryIvory)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BgDark
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BgDark)
             )
         },
         containerColor = BgDark,
@@ -69,7 +71,7 @@ fun MenuScreen(
                     shape = RoundedCornerShape(0.dp)
                 ) {
                     Text(
-                        "COMANDA ($totalItems)", 
+                        "COMANDA ($totalItems)",
                         style = LuxuryTypography.labelLarge,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
@@ -83,7 +85,7 @@ fun MenuScreen(
                 selectedId = uiState.selectedCategoriaId,
                 onSelected = { viewModel.selectCategoria(it) }
             )
-            
+
             if (uiState.isLoading || uiState.isComandaActionLoading) {
                 LinearProgressIndicator(
                     modifier = Modifier.fillMaxWidth().height(1.dp),
@@ -93,7 +95,7 @@ fun MenuScreen(
             } else {
                 Spacer(modifier = Modifier.height(1.dp))
             }
-            
+
             uiState.error?.let {
                 Text(
                     text = it,
@@ -118,15 +120,67 @@ fun MenuScreen(
             ) {
                 ComandaSheetContent(
                     comanda = uiState.activeComanda,
-                    productos = uiState.productos,
-                    onPagar = {
-                        viewModel.pagarComanda()
-                        showComandaSheet = false
-                        onBack()
-                    }
+                    isActionLoading = uiState.isComandaActionLoading,
+                    onRemoveDetalle = { detalleId -> viewModel.removeDetalleFromOrder(detalleId) },
+                    onPagar = { showPayDialog = true }
                 )
             }
         }
+    }
+
+    if (showPayDialog) {
+        val total = uiState.activeComanda?.detalles?.sumOf { it.precioUnitario * it.cantidad } ?: 0.0
+        AlertDialog(
+            onDismissRequest = { showPayDialog = false },
+            containerColor = BgSurfaceElevated,
+            shape = RoundedCornerShape(0.dp),
+            title = {
+                Text("CONFIRMAR PAGO", style = LuxuryTypography.titleLarge, color = PrimaryIvory)
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Se cerrará la comanda y la mesa quedará libre.",
+                        style = LuxuryTypography.bodyLarge,
+                        color = TextSecondary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("TOTAL", style = LuxuryTypography.labelLarge, color = TextMuted)
+                        Text(
+                            "%.2f€".format(total),
+                            style = LuxuryTypography.titleLarge.copy(fontWeight = FontWeight.Medium),
+                            color = PrimaryIvory
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showPayDialog = false
+                        showComandaSheet = false
+                        viewModel.pagarComanda()
+                        onBack()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryIvory, contentColor = BgDark),
+                    shape = RoundedCornerShape(0.dp)
+                ) {
+                    Text("PAGAR Y CERRAR", style = LuxuryTypography.labelLarge)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showPayDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = TextMuted)
+                ) {
+                    Text("CANCELAR", style = LuxuryTypography.labelSmall)
+                }
+            }
+        )
     }
 }
 
@@ -146,12 +200,12 @@ fun CategorySelector(
             FilterChip(
                 selected = selectedId == null,
                 onClick = { onSelected(null) },
-                label = { 
+                label = {
                     Text(
-                        "TODO", 
+                        "TODO",
                         style = LuxuryTypography.labelSmall,
                         color = if (selectedId == null) BgDark else TextMuted
-                    ) 
+                    )
                 },
                 colors = FilterChipDefaults.filterChipColors(
                     containerColor = BgDark,
@@ -170,12 +224,12 @@ fun CategorySelector(
             FilterChip(
                 selected = selectedId == cat.id,
                 onClick = { onSelected(cat.id) },
-                label = { 
+                label = {
                     Text(
-                        cat.nombre.uppercase(), 
+                        cat.nombre.uppercase(),
                         style = LuxuryTypography.labelSmall,
                         color = if (selectedId == cat.id) BgDark else TextMuted
-                    ) 
+                    )
                 },
                 colors = FilterChipDefaults.filterChipColors(
                     containerColor = BgDark,
@@ -219,7 +273,7 @@ fun ProductList(
                     )
                 }
                 Text(
-                    "${producto.precio}€",
+                    "%.2f€".format(producto.precio),
                     style = LuxuryTypography.bodyLarge,
                     color = PrimaryIvory
                 )
@@ -232,22 +286,32 @@ fun ProductList(
 @Composable
 fun ComandaSheetContent(
     comanda: Comanda?,
-    productos: List<Producto>,
+    isActionLoading: Boolean,
+    onRemoveDetalle: (Long) -> Unit,
     onPagar: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp)
-            .padding(bottom = 32.dp)
+            .padding(horizontal = 24.dp)
+            .padding(top = 8.dp, bottom = 32.dp)
     ) {
-        Text(
-            "COMANDA ACTUAL",
-            style = LuxuryTypography.titleLarge,
-            color = PrimaryIvory
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("COMANDA ACTUAL", style = LuxuryTypography.titleLarge, color = PrimaryIvory)
+            if (isActionLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    color = PrimaryIvory,
+                    strokeWidth = 2.dp
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+
         if (comanda == null || comanda.detalles.isEmpty()) {
             Text(
                 "No hay productos en la comanda.",
@@ -256,37 +320,39 @@ fun ComandaSheetContent(
             )
         } else {
             LazyColumn(
-                modifier = Modifier.weight(1f, fill = false),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier.heightIn(max = 350.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
-                items(comanda.detalles) { detalle ->
-
-                    val productName = productos.find { it.id == detalle.productoId }?.nombre ?: "Producto #${detalle.productoId}"
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            "${detalle.cantidad}x $productName",
-                            style = LuxuryTypography.bodyLarge,
-                            color = TextPrimary
-                        )
-                        Text(
-                            "${detalle.cantidad * (productos.find { it.id == detalle.productoId }?.precio ?: 0.0)}€",
-                            style = LuxuryTypography.bodyLarge,
-                            color = TextMuted
-                        )
-                    }
+                items(comanda.detalles, key = { it.id ?: 0 }) { detalle ->
+                    SheetDetalleRow(detalle = detalle, onRemove = { onRemoveDetalle(detalle.id ?: 0) })
+                    HorizontalDivider(color = BorderSubtle)
                 }
             }
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            HorizontalDivider(color = BorderStrong)
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+            HorizontalDivider(color = BorderStrong)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Total calculado localmente usando precioUnitario * cantidad
+            val total = comanda.detalles.sumOf { it.precioUnitario * it.cantidad }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("TOTAL", style = LuxuryTypography.labelLarge, color = TextMuted)
+                Text(
+                    "%.2f€".format(total),
+                    style = LuxuryTypography.headlineLarge.copy(fontWeight = FontWeight.Light),
+                    color = PrimaryIvory
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             Button(
                 onClick = onPagar,
+                enabled = !isActionLoading,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(0.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -294,11 +360,49 @@ fun ComandaSheetContent(
                     contentColor = BgDark
                 )
             ) {
-                Text(
-                    "PAGAR Y CERRAR",
-                    style = LuxuryTypography.labelLarge
-                )
+                Text("PAGAR Y CERRAR", style = LuxuryTypography.labelLarge)
             }
+        }
+    }
+}
+
+@Composable
+private fun SheetDetalleRow(
+    detalle: DetalleComanda,
+    onRemove: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            "${detalle.cantidad}×",
+            style = LuxuryTypography.labelLarge,
+            color = TextMuted,
+            modifier = Modifier.width(28.dp)
+        )
+        Text(
+            (detalle.nombreProducto ?: "Producto #${detalle.productoId}").uppercase(),
+            style = LuxuryTypography.bodyLarge,
+            color = TextPrimary,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            "%.2f€".format(detalle.precioUnitario * detalle.cantidad),
+            style = LuxuryTypography.bodyLarge,
+            color = PrimaryIvory,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+        IconButton(onClick = onRemove, modifier = Modifier.size(28.dp)) {
+            Icon(
+                Icons.Default.Delete,
+                contentDescription = "Eliminar",
+                tint = AccentRed.copy(alpha = 0.6f),
+                modifier = Modifier.size(16.dp)
+            )
         }
     }
 }

@@ -35,7 +35,7 @@ class CreateComandaUseCase(private val repository: BarRepository) {
 class AddDetalleUseCase(private val repository: BarRepository) {
     suspend operator fun invoke(comandaId: String, productoId: Long, cantidad: Int = 1): Result<DetalleComanda> {
         val detalle = DetalleComanda(
-            id = 0,
+            id = null,
             comandaId = comandaId,
             productoId = productoId,
             cantidad = cantidad,
@@ -48,5 +48,11 @@ class AddDetalleUseCase(private val repository: BarRepository) {
 class PagarComandaUseCase(private val repository: BarRepository) {
     suspend operator fun invoke(comandaId: String): Result<Unit> {
         return repository.pagarComanda(comandaId)
+    }
+}
+
+class RemoveDetalleUseCase(private val repository: BarRepository) {
+    suspend operator fun invoke(comandaId: String, detalleId: Long, mesaId: Long): Result<Unit> {
+        return repository.deleteDetalleFromComanda(comandaId, detalleId, mesaId)
     }
 }

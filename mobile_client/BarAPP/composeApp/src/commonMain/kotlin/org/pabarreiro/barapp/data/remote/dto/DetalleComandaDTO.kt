@@ -7,6 +7,7 @@ data class DetalleComandaDTO(
     val id: Long? = null,
     val comandaId: String? = null,
     val productoId: Long,
+    val producto: ProductoDTO? = null,
     val cantidad: Int,
     val precioUnitario: Double
 )

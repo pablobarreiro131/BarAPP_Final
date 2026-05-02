@@ -9,11 +9,16 @@ interface RemoteDataSource {
     
     suspend fun getProductos(categoriaId: Long?): List<ProductoDTO>
     
+    suspend fun getComandasByMesa(mesaId: Long): List<ComandaDTO>
+    
     suspend fun createComanda(comanda: ComandaDTO): ComandaDTO
     
     suspend fun addDetalle(comandaId: String, detalle: DetalleComandaDTO): DetalleComandaDTO
+    
+    suspend fun deleteDetalle(comandaId: String, detalleId: Long)
     
     suspend fun pagareComanda(comandaId: String): ComandaDTO
     
     suspend fun getMe(): PerfilDTO
 }
+

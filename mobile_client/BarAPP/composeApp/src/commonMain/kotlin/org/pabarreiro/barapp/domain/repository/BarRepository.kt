@@ -20,9 +20,12 @@ interface BarRepository {
 
     // Comandas
     fun getComandasActivas(mesaId: Long): Flow<List<Comanda>>
+    suspend fun syncComandasMesa(mesaId: Long): Result<Unit>
     suspend fun createComanda(comanda: Comanda): Result<Comanda>
     suspend fun addDetalleAComanda(comandaId: String, detalle: DetalleComanda): Result<DetalleComanda>
+    suspend fun deleteDetalleFromComanda(comandaId: String, detalleId: Long, mesaId: Long): Result<Unit>
     suspend fun pagarComanda(comandaId: String): Result<Unit>
+    suspend fun getMesa(mesaId: Long): Mesa?
     
     // Sync
     suspend fun syncPendingOrders(): Result<Unit>
