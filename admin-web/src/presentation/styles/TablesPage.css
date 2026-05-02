@@ -12,6 +12,13 @@
   padding: 16px 24px;
   margin-bottom: 48px;
   background: var(--bg-surface);
+  transition: all var(--transition-normal);
+}
+
+.action-bar-compact.editing-mode {
+  border-color: var(--primary);
+  background: rgba(232, 224, 212, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .info-badge {
@@ -94,6 +101,17 @@
   border: 1px solid var(--border-color);
 }
 
+@keyframes cardEntrance {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+}
+
 .table-card {
   display: flex;
   align-items: center;
@@ -102,8 +120,24 @@
   padding: 28px 24px;
   background: var(--bg-dark);
   border-radius: 0;
-  transition: background var(--transition-fast);
+  transition: all var(--transition-normal);
+  border: 1px solid transparent;
+  animation: cardEntrance 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
+
+/* Staggered animation delays */
+.table-card:nth-child(1) { animation-delay: 0.05s; }
+.table-card:nth-child(2) { animation-delay: 0.1s; }
+.table-card:nth-child(3) { animation-delay: 0.15s; }
+.table-card:nth-child(4) { animation-delay: 0.2s; }
+.table-card:nth-child(5) { animation-delay: 0.25s; }
+.table-card:nth-child(6) { animation-delay: 0.3s; }
+.table-card:nth-child(7) { animation-delay: 0.35s; }
+.table-card:nth-child(8) { animation-delay: 0.4s; }
+.table-card:nth-child(9) { animation-delay: 0.45s; }
+.table-card:nth-child(10) { animation-delay: 0.5s; }
+.table-card:nth-child(11) { animation-delay: 0.55s; }
+.table-card:nth-child(12) { animation-delay: 0.6s; }
 
 .table-card:hover {
   background: var(--bg-surface);
@@ -184,9 +218,17 @@
   font-size: 0.85rem;
 }
 
+@keyframes pulseEdit {
+  0% { box-shadow: 0 0 0 0 rgba(232, 224, 212, 0.2); transform: scale(1); }
+  50% { box-shadow: 0 0 0 8px rgba(232, 224, 212, 0); transform: scale(1.02); }
+  100% { box-shadow: 0 0 0 0 rgba(232, 224, 212, 0); transform: scale(1); }
+}
+
 .table-card.editing {
   border-color: var(--primary);
-  background: var(--bg-surface);
+  background: var(--bg-surface-elevated);
+  animation: pulseEdit 2s infinite ease-in-out;
+  z-index: 10;
 }
 
 .table-actions-btns {

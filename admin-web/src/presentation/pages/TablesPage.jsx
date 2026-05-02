@@ -67,6 +67,10 @@ const TablesPage = () => {
     if (!window.confirm('¿Estás seguro de eliminar esta mesa?')) return;
     try {
       await apiClient.deleteMesa(id);
+      if (editingMesa?.id === id) {
+        setEditingMesa(null);
+        setNewTableCapacity('4');
+      }
       fetchTables();
     } catch (err) {
       alert('Error: ' + err.message);
@@ -84,7 +88,7 @@ const TablesPage = () => {
 
   return (
     <div className="tables-container">
-      <div className="action-bar-compact">
+      <div className={`action-bar-compact ${editingMesa ? 'editing-mode' : ''}`}>
         <div className="info-badge">
           <span className="label">{editingMesa ? 'Editando:' : 'Siguiente:'}</span>
           <span className="value">Mesa {editingMesa ? editingMesa.numeroMesa : nextTableNum}</span>

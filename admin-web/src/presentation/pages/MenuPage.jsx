@@ -77,6 +77,9 @@ const MenuPage = () => {
     if (!window.confirm('¿Estás seguro de eliminar esta categoría? Los productos asociados podrían dar error.')) return;
     try {
       await apiClient.deleteCategoria(id);
+      if (editingItem?.type === 'category' && editingItem.data.id === id) {
+        setEditingItem(null);
+      }
       fetchData();
     } catch (err) {
       alert(err.message);
@@ -127,6 +130,9 @@ const MenuPage = () => {
     if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
     try {
       await apiClient.deleteProducto(id);
+      if (editingItem?.type === 'product' && editingItem.data.id === id) {
+        setEditingItem(null);
+      }
       fetchData();
     } catch (err) {
       alert(err.message);
@@ -153,58 +159,175 @@ const MenuPage = () => {
       </div>
 
       <div className="tab-content">
-        {activeTab === 'categories' ? (
-          <div className="categories-layout">
-            <section className="premium-card form-section">
-              <div className="section-header">
-                <CategoryIcon />
-                <h3>{editingItem ? 'Editar Categoría' : 'Nueva Categoría'}</h3>
-              </div>
-              <form onSubmit={editingItem ? handleUpdateCategory : handleCreateCategory} className="full-form">
-                <div className="input-group">
-                  <label>Nombre de la Categoría</label>
-                  <input 
-                    type="text" 
-                    placeholder="Ej: Bebidas, Raciones..."
-                    value={editingItem ? editingItem.data.nombre : newCat.nombre}
-                    onChange={(e) => editingItem ? 
-                      setEditingItem({...editingItem, data: {...editingItem.data, nombre: e.target.value}}) : 
-                      setNewCat({...newCat, nombre: e.target.value})}
-                    required
-                  />
-                </div>
-                <div className="input-group">
-                  <label>Descripción (Opcional)</label>
-                  <textarea 
-                    placeholder="Breve descripción de la categoría..."
-                    value={editingItem ? (editingItem.data.descripcion || '') : newCat.descripcion}
-                    onChange={(e) => editingItem ? 
-                      setEditingItem({...editingItem, data: {...editingItem.data, descripcion: e.target.value}}) : 
-                      setNewCat({...newCat, descripcion: e.target.value})}
-                    rows="3"
-                  />
-                </div>
-                <div className="form-actions">
-                  <button type="submit" className="add-btn-full">
-                    {editingItem ? 'Guardar Cambios' : 'Crear Categoría'}
-                  </button>
-                  {editingItem && (
-                    <button type="button" className="cancel-btn-full" onClick={() => setEditingItem(null)}>
-                      Cancelar
+        <div className={`menu-layout ${activeTab}-active`}>
+          <section className={`premium-card form-section ${editingItem ? 'editing-mode' : ''}`}>
+            <div className="section-header">
+              {activeTab === 'categories' ? <CategoryIcon /> : <FastfoodIcon />}
+              <h3>
+                {editingItem 
+                  ? (activeTab === 'categories' ? 'Editar Categoría' : 'Editar Producto') 
+                  : (activeTab === 'categories' ? 'Nueva Categoría' : 'Nuevo Producto')}
+              </h3>
+            </div>
+            
+            <div className="form-container-inner" key={activeTab}>
+              {activeTab === 'categories' ? (
+                <form onSubmit={editingItem ? handleUpdateCategory : handleCreateCategory} className="full-form">
+                  <div className="input-group">
+                    <label>Nombre de la Categoría</label>
+                    <input 
+                      type="text" 
+                      placeholder="Ej: Bebidas, Raciones..."
+                      value={editingItem ? editingItem.data.nombre : newCat.nombre}
+                      onChange={(e) => editingItem ? 
+                        setEditingItem({...editingItem, data: {...editingItem.data, nombre: e.target.value}}) : 
+                        setNewCat({...newCat, nombre: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Descripción (Opcional)</label>
+                    <textarea 
+                      placeholder="Breve descripción de la categoría..."
+                      value={editingItem ? (editingItem.data.descripcion || '') : newCat.descripcion}
+                      onChange={(e) => editingItem ? 
+                        setEditingItem({...editingItem, data: {...editingItem.data, descripcion: e.target.value}}) : 
+                        setNewCat({...newCat, descripcion: e.target.value})}
+                      rows="3"
+                    />
+                  </div>
+                  <div className="form-actions">
+                    <button type="submit" className="add-btn-full">
+                      {editingItem ? 'Guardar Cambios' : 'Crear Categoría'}
                     </button>
-                  )}
-                </div>
-              </form>
-            </section>
+                    {editingItem && (
+                      <button type="button" className="cancel-btn-full" onClick={() => setEditingItem(null)}>
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
+                </form>
+              ) : (
+                <form onSubmit={editingItem ? handleUpdateProduct : handleCreateProduct} className="full-form">
+                  <div className="input-row">
+                    <div className="input-group">
+                      <label>Nombre del Producto</label>
+                      <input 
+                        type="text" 
+                        placeholder="Ej: Caña, Hamburguesa..."
+                        value={editingItem ? editingItem.data.nombre : newProd.nombre}
+                        onChange={(e) => editingItem ? 
+                          setEditingItem({...editingItem, data: {...editingItem.data, nombre: e.target.value}}) : 
+                          setNewProd({...newProd, nombre: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Categoría</label>
+                      <select 
+                        value={editingItem ? editingItem.data.categoriaId : newProd.categoriaId}
+                        onChange={(e) => editingItem ? 
+                          setEditingItem({...editingItem, data: {...editingItem.data, categoriaId: e.target.value}}) : 
+                          setNewProd({...newProd, categoriaId: e.target.value})}
+                        required
+                      >
+                        <option value="">Seleccionar...</option>
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
 
-            <section className="list-section">
-              <div className="section-header">
-                <h3>Categorías Existentes</h3>
-                <span className="badge">{categories.length}</span>
-              </div>
+                  <div className="input-row">
+                    <div className="input-group">
+                      <label>Precio (€)</label>
+                      <input 
+                        type="number" 
+                        step="0.01"
+                        placeholder="0.00"
+                        value={editingItem ? editingItem.data.precio : newProd.precio}
+                        onChange={(e) => editingItem ? 
+                          setEditingItem({...editingItem, data: {...editingItem.data, precio: e.target.value}}) : 
+                          setNewProd({...newProd, precio: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Stock</label>
+                      <div className="stock-input">
+                        <InventoryIcon />
+                        <input 
+                          type="number" 
+                          value={editingItem ? editingItem.data.stock : newProd.stock}
+                          onChange={(e) => editingItem ? 
+                            setEditingItem({...editingItem, data: {...editingItem.data, stock: e.target.value}}) : 
+                            setNewProd({...newProd, stock: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="input-group">
+                    <label>URL de Imagen</label>
+                    <div className="image-input">
+                      <ImageIcon />
+                      <input 
+                        type="text" 
+                        placeholder="https://..."
+                        value={editingItem ? (editingItem.data.imagenUrl || '') : newProd.imagenUrl}
+                        onChange={(e) => editingItem ? 
+                          setEditingItem({...editingItem, data: {...editingItem.data, imagenUrl: e.target.value}}) : 
+                          setNewProd({...newProd, imagenUrl: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  {(editingItem ? editingItem.data.imagenUrl : newProd.imagenUrl) && (
+                    <div className="image-preview">
+                      <img src={editingItem ? editingItem.data.imagenUrl : newProd.imagenUrl} alt="Preview" onError={(e) => e.target.style.display='none'} />
+                    </div>
+                  )}
+
+                  <div className="input-group checkbox-group">
+                    <label className="switch-label">
+                      <span>Producto Activo</span>
+                      <input 
+                        type="checkbox" 
+                        checked={editingItem ? editingItem.data.activo : newProd.activo}
+                        onChange={(e) => editingItem ? 
+                          setEditingItem({...editingItem, data: {...editingItem.data, activo: e.target.checked}}) : 
+                          setNewProd({...newProd, activo: e.target.checked})}
+                      />
+                      <span className="slider"></span>
+                    </label>
+                  </div>
+
+                  <div className="form-actions">
+                    <button type="submit" className="add-btn-full">
+                      {editingItem ? 'Guardar Cambios' : 'Añadir al Menú'}
+                    </button>
+                    {editingItem && (
+                      <button type="button" className="cancel-btn-full" onClick={() => setEditingItem(null)}>
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
+                </form>
+              )}
+            </div>
+          </section>
+
+          <section className="list-section" key={activeTab}>
+            <div className="section-header">
+              <h3>{activeTab === 'categories' ? 'Categorías Existentes' : 'Carta de Productos'}</h3>
+              <span className="badge">{activeTab === 'categories' ? categories.length : products.length}</span>
+            </div>
+            
+            {activeTab === 'categories' ? (
               <div className="categories-grid">
                 {categories.map(cat => (
-                  <div key={cat.id} className="category-card premium-card">
+                  <div key={cat.id} className={`category-card premium-card ${editingItem?.type === 'category' && editingItem.data.id === cat.id ? 'editing' : ''}`}>
                     <div className="cat-info">
                       <h4>{cat.nombre}</h4>
                       <p>{cat.descripcion || 'Sin descripción'}</p>
@@ -220,131 +343,10 @@ const MenuPage = () => {
                   </div>
                 ))}
               </div>
-            </section>
-          </div>
-        ) : (
-          <div className="products-layout">
-            <section className="premium-card form-section">
-              <div className="section-header">
-                <FastfoodIcon />
-                <h3>{editingItem ? 'Editar Producto' : 'Nuevo Producto'}</h3>
-              </div>
-              <form onSubmit={editingItem ? handleUpdateProduct : handleCreateProduct} className="full-form">
-                <div className="input-row">
-                  <div className="input-group">
-                    <label>Nombre del Producto</label>
-                    <input 
-                      type="text" 
-                      placeholder="Ej: Caña, Hamburguesa..."
-                      value={editingItem ? editingItem.data.nombre : newProd.nombre}
-                      onChange={(e) => editingItem ? 
-                        setEditingItem({...editingItem, data: {...editingItem.data, nombre: e.target.value}}) : 
-                        setNewProd({...newProd, nombre: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div className="input-group">
-                    <label>Categoría</label>
-                    <select 
-                      value={editingItem ? editingItem.data.categoriaId : newProd.categoriaId}
-                      onChange={(e) => editingItem ? 
-                        setEditingItem({...editingItem, data: {...editingItem.data, categoriaId: e.target.value}}) : 
-                        setNewProd({...newProd, categoriaId: e.target.value})}
-                      required
-                    >
-                      <option value="">Seleccionar...</option>
-                      {categories.map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.nombre}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="input-row">
-                  <div className="input-group">
-                    <label>Precio (€)</label>
-                    <input 
-                      type="number" 
-                      step="0.01"
-                      placeholder="0.00"
-                      value={editingItem ? editingItem.data.precio : newProd.precio}
-                      onChange={(e) => editingItem ? 
-                        setEditingItem({...editingItem, data: {...editingItem.data, precio: e.target.value}}) : 
-                        setNewProd({...newProd, precio: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div className="input-group">
-                    <label>Stock</label>
-                    <div className="stock-input">
-                      <InventoryIcon />
-                      <input 
-                        type="number" 
-                        value={editingItem ? editingItem.data.stock : newProd.stock}
-                        onChange={(e) => editingItem ? 
-                          setEditingItem({...editingItem, data: {...editingItem.data, stock: e.target.value}}) : 
-                          setNewProd({...newProd, stock: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="input-group">
-                  <label>URL de Imagen</label>
-                  <div className="image-input">
-                    <ImageIcon />
-                    <input 
-                      type="text" 
-                      placeholder="https://..."
-                      value={editingItem ? (editingItem.data.imagenUrl || '') : newProd.imagenUrl}
-                      onChange={(e) => editingItem ? 
-                        setEditingItem({...editingItem, data: {...editingItem.data, imagenUrl: e.target.value}}) : 
-                        setNewProd({...newProd, imagenUrl: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                {(editingItem ? editingItem.data.imagenUrl : newProd.imagenUrl) && (
-                  <div className="image-preview">
-                    <img src={editingItem ? editingItem.data.imagenUrl : newProd.imagenUrl} alt="Preview" onError={(e) => e.target.style.display='none'} />
-                  </div>
-                )}
-
-                <div className="input-group checkbox-group">
-                  <label className="switch-label">
-                    <span>Producto Activo</span>
-                    <input 
-                      type="checkbox" 
-                      checked={editingItem ? editingItem.data.activo : newProd.activo}
-                      onChange={(e) => editingItem ? 
-                        setEditingItem({...editingItem, data: {...editingItem.data, activo: e.target.checked}}) : 
-                        setNewProd({...newProd, activo: e.target.checked})}
-                    />
-                    <span className="slider"></span>
-                  </label>
-                </div>
-
-                <div className="form-actions">
-                  <button type="submit" className="add-btn-full">
-                    {editingItem ? 'Guardar Cambios' : 'Añadir al Menú'}
-                  </button>
-                  {editingItem && (
-                    <button type="button" className="cancel-btn-full" onClick={() => setEditingItem(null)}>
-                      Cancelar
-                    </button>
-                  )}
-                </div>
-              </form>
-            </section>
-
-            <section className="list-section">
-              <div className="section-header">
-                <h3>Carta de Productos</h3>
-                <span className="badge">{products.length}</span>
-              </div>
+            ) : (
               <div className="products-grid">
                 {products.map(prod => (
-                  <div key={prod.id} className={`product-card premium-card ${!prod.activo ? 'inactive' : ''}`}>
+                  <div key={prod.id} className={`product-card premium-card ${!prod.activo ? 'inactive' : ''} ${editingItem?.type === 'product' && editingItem.data.id === prod.id ? 'editing' : ''}`}>
                     <div className="prod-img">
                       {prod.imagenUrl ? (
                         <img src={prod.imagenUrl} alt={prod.nombre} />
@@ -383,9 +385,9 @@ const MenuPage = () => {
                   </div>
                 ))}
               </div>
-            </section>
-          </div>
-        )}
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );

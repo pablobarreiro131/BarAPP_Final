@@ -33,13 +33,74 @@
   border: 1px solid var(--border-color);
 }
 
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .staff-card {
   text-align: center;
   padding: 36px 28px;
   background: var(--bg-dark);
   border-radius: 0;
-  transition: background var(--transition-fast);
+  transition: all var(--transition-normal);
   position: relative;
+  animation: cardEntrance 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.staff-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.staff-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.staff-card:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.staff-card:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.staff-card:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+.staff-card:nth-child(6) {
+  animation-delay: 0.3s;
+}
+
+.staff-card:nth-child(7) {
+  animation-delay: 0.35s;
+}
+
+.staff-card:nth-child(8) {
+  animation-delay: 0.4s;
+}
+
+.staff-card:nth-child(9) {
+  animation-delay: 0.45s;
+}
+
+.staff-card:nth-child(10) {
+  animation-delay: 0.5s;
+}
+
+.staff-card:nth-child(11) {
+  animation-delay: 0.55s;
+}
+
+.staff-card:nth-child(12) {
+  animation-delay: 0.6s;
 }
 
 .staff-card:hover {
@@ -242,7 +303,7 @@
 }
 
 .input-field.disabled {
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   border-style: dashed;
 }
 
