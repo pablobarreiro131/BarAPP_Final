@@ -68,6 +68,16 @@ public class MesaService {
             throw new ResourceNotFoundException("Mesa no encontrada con ID: " + id);
         }
         mesaRepository.deleteById(id);
+        renumberTables();
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void renumberTables() {
+        List<Mesa> mesas = mesaRepository.findAllByOrderByNumeroMesaAsc();
+        for (int i = 0; i < mesas.size(); i++) {
+            mesas.get(i).setNumeroMesa(i + 1);
+        }
+        mesaRepository.saveAll(mesas);
     }
 
     public MesaDTO mapToDTO(Mesa mesa) {

@@ -3,6 +3,7 @@ import { apiClient } from '../../data/apiClient';
 import AddIcon from '@mui/icons-material/Add';
 import TableBarIcon from '@mui/icons-material/TableBar';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
+import EditIcon from '@mui/icons-material/Edit';
 
 import '../styles/TablesPage.css';
 
@@ -10,8 +11,9 @@ const TablesPage = () => {
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [newTableNumber, setNewTableNumber] = useState('');
   const [newTableCapacity, setNewTableCapacity] = useState('4');
+  
+  const [editingMesa, setEditingMesa] = useState(null);
 
   const fetchTables = async () => {
     try {
@@ -30,20 +32,30 @@ const TablesPage = () => {
     fetchTables();
   }, []);
 
-  const handleCreateMesa = async (e) => {
+  const handleCreateOrUpdateMesa = async (e) => {
     e.preventDefault();
     
-    const nextNumber = tables.length > 0 
-      ? Math.max(...tables.map(t => t.numeroMesa)) + 1 
-      : 1;
-
     try {
-      await apiClient.createMesa({ 
-        numeroMesa: nextNumber,
-        capacidad: parseInt(newTableCapacity) || 4,
-        estado: 'libre'
-      });
-      setNewTableNumber('');
+      if (editingMesa) {
+        await apiClient.fetchWithAuth(`/mesas/${editingMesa.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            ...editingMesa,
+            capacidad: parseInt(newTableCapacity) || 4
+          })
+        });
+        setEditingMesa(null);
+      } else {
+        const nextNumber = tables.length > 0 
+          ? Math.max(...tables.map(t => t.numeroMesa)) + 1 
+          : 1;
+
+        await apiClient.createMesa({ 
+          numeroMesa: nextNumber,
+          capacidad: parseInt(newTableCapacity) || 4,
+          estado: 'libre'
+        });
+      }
       setNewTableCapacity('4');
       fetchTables();
     } catch (err) {
@@ -61,6 +73,11 @@ const TablesPage = () => {
     }
   };
 
+  const handleEdit = (mesa) => {
+    setEditingMesa(mesa);
+    setNewTableCapacity(mesa.capacidad.toString());
+  };
+
   const nextTableNum = tables.length > 0 
     ? Math.max(...tables.map(t => t.numeroMesa)) + 1 
     : 1;
@@ -69,8 +86,8 @@ const TablesPage = () => {
     <div className="tables-container">
       <div className="action-bar-compact">
         <div className="info-badge">
-          <span className="label">Siguiente:</span>
-          <span className="value">Mesa {nextTableNum}</span>
+          <span className="label">{editingMesa ? 'Editando:' : 'Siguiente:'}</span>
+          <span className="value">Mesa {editingMesa ? editingMesa.numeroMesa : nextTableNum}</span>
         </div>
         <div className="compact-form-group">
           <label>Capacidad:</label>
@@ -82,10 +99,17 @@ const TablesPage = () => {
             className="mini-input"
           />
         </div>
-        <button onClick={handleCreateMesa} className="add-btn-compact">
-          <AddIcon />
-          <span>Añadir Mesa</span>
-        </button>
+        <div className="compact-actions">
+          <button onClick={handleCreateOrUpdateMesa} className="add-btn-compact">
+            {editingMesa ? <EditIcon /> : <AddIcon />}
+            <span>{editingMesa ? 'Guardar' : 'Añadir Mesa'}</span>
+          </button>
+          {editingMesa && (
+            <button onClick={() => { setEditingMesa(null); setNewTableCapacity('4'); }} className="cancel-btn-compact">
+              Cancelar
+            </button>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -94,8 +118,8 @@ const TablesPage = () => {
         <div className="error-banner">{error}</div>
       ) : (
         <div className="tables-grid">
-          {tables.map((mesa) => (
-            <div key={mesa.id} className={`table-card premium-card status-${mesa.estado}`}>
+          {tables.sort((a,b) => a.numeroMesa - b.numeroMesa).map((mesa) => (
+            <div key={mesa.id} className={`table-card premium-card status-${mesa.estado} ${editingMesa?.id === mesa.id ? 'editing' : ''}`}>
               <div className="table-icon">
                 <TableBarIcon />
               </div>
@@ -111,13 +135,22 @@ const TablesPage = () => {
                   <span>{mesa.capacidad} PERSONAS</span>
                 </div>
               </div>
-              <button 
-                onClick={() => handleDeleteMesa(mesa.id)}
-                className="delete-btn"
-                title="Eliminar mesa"
-              >
-                <DeleteOutlinedIcon />
-              </button>
+              <div className="table-actions-btns">
+                <button 
+                  onClick={() => handleEdit(mesa)}
+                  className="edit-btn"
+                  title="Editar mesa"
+                >
+                  <EditIcon fontSize="small" />
+                </button>
+                <button 
+                  onClick={() => handleDeleteMesa(mesa.id)}
+                  className="delete-btn"
+                  title="Eliminar mesa"
+                >
+                  <DeleteOutlinedIcon fontSize="small" />
+                </button>
+              </div>
             </div>
           ))}
         </div>

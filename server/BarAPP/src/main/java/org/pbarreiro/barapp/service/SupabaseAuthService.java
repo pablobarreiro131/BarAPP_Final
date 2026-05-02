@@ -48,4 +48,15 @@ public class SupabaseAuthService {
         
         throw new RuntimeException("Error al crear usuario en Supabase: " + response);
     }
+
+    public void deleteUser(String userId) {
+        String url = issuerUri + "/admin/users/" + userId;
+
+        restClient.delete()
+                .uri(url)
+                .header("Authorization", "Bearer " + serviceRoleKey)
+                .header("apikey", serviceRoleKey)
+                .retrieve()
+                .toBodilessEntity();
+    }
 }

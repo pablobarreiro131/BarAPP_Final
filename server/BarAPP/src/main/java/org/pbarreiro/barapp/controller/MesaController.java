@@ -47,6 +47,12 @@ public class MesaController {
         return ResponseEntity.ok(mesaService.updateEstado(id, estado));
     }
 
+    @PostMapping("/renumerar")
+    public ResponseEntity<Void> renumberMesas() {
+        mesaService.renumberTables();
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMesa(@PathVariable Long id) {
         mesaService.delete(id);

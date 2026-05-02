@@ -7,6 +7,8 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import ImageIcon from '@mui/icons-material/Image';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import '../styles/MenuPage.css';
 
@@ -25,6 +27,8 @@ const MenuPage = () => {
     imagenUrl: '', 
     activo: true 
   });
+
+  const [editingItem, setEditingItem] = useState(null); // { type: 'product'|'category', data: {...} }
 
   const fetchData = async () => {
     try {
@@ -58,6 +62,27 @@ const MenuPage = () => {
     }
   };
 
+  const handleUpdateCategory = async (e) => {
+    e.preventDefault();
+    try {
+      await apiClient.updateCategoria(editingItem.data.id, editingItem.data);
+      setEditingItem(null);
+      fetchData();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar esta categoría? Los productos asociados podrían dar error.')) return;
+    try {
+      await apiClient.deleteCategoria(id);
+      fetchData();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     if (!newProd.nombre || !newProd.precio || !newProd.categoriaId) return;
@@ -82,19 +107,45 @@ const MenuPage = () => {
     }
   };
 
+  const handleUpdateProduct = async (e) => {
+    e.preventDefault();
+    try {
+      await apiClient.updateProducto(editingItem.data.id, {
+        ...editingItem.data,
+        precio: parseFloat(editingItem.data.precio),
+        stock: parseInt(editingItem.data.stock),
+        categoriaId: parseInt(editingItem.data.categoriaId)
+      });
+      setEditingItem(null);
+      fetchData();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteProduct = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
+    try {
+      await apiClient.deleteProducto(id);
+      fetchData();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   return (
     <div className="menu-container">
       <div className="menu-tabs">
         <button 
           className={activeTab === 'products' ? 'tab-btn active' : 'tab-btn'}
-          onClick={() => setActiveTab('products')}
+          onClick={() => { setActiveTab('products'); setEditingItem(null); }}
         >
           <FastfoodIcon />
           Productos
         </button>
         <button 
           className={activeTab === 'categories' ? 'tab-btn active' : 'tab-btn'}
-          onClick={() => setActiveTab('categories')}
+          onClick={() => { setActiveTab('categories'); setEditingItem(null); }}
         >
           <CategoryIcon />
           Categorías
@@ -107,16 +158,18 @@ const MenuPage = () => {
             <section className="premium-card form-section">
               <div className="section-header">
                 <CategoryIcon />
-                <h3>Nueva Categoría</h3>
+                <h3>{editingItem ? 'Editar Categoría' : 'Nueva Categoría'}</h3>
               </div>
-              <form onSubmit={handleCreateCategory} className="full-form">
+              <form onSubmit={editingItem ? handleUpdateCategory : handleCreateCategory} className="full-form">
                 <div className="input-group">
                   <label>Nombre de la Categoría</label>
                   <input 
                     type="text" 
                     placeholder="Ej: Bebidas, Raciones..."
-                    value={newCat.nombre}
-                    onChange={(e) => setNewCat({...newCat, nombre: e.target.value})}
+                    value={editingItem ? editingItem.data.nombre : newCat.nombre}
+                    onChange={(e) => editingItem ? 
+                      setEditingItem({...editingItem, data: {...editingItem.data, nombre: e.target.value}}) : 
+                      setNewCat({...newCat, nombre: e.target.value})}
                     required
                   />
                 </div>
@@ -124,12 +177,23 @@ const MenuPage = () => {
                   <label>Descripción (Opcional)</label>
                   <textarea 
                     placeholder="Breve descripción de la categoría..."
-                    value={newCat.descripcion}
-                    onChange={(e) => setNewCat({...newCat, descripcion: e.target.value})}
+                    value={editingItem ? (editingItem.data.descripcion || '') : newCat.descripcion}
+                    onChange={(e) => editingItem ? 
+                      setEditingItem({...editingItem, data: {...editingItem.data, descripcion: e.target.value}}) : 
+                      setNewCat({...newCat, descripcion: e.target.value})}
                     rows="3"
                   />
                 </div>
-                <button type="submit" className="add-btn-full">Crear Categoría</button>
+                <div className="form-actions">
+                  <button type="submit" className="add-btn-full">
+                    {editingItem ? 'Guardar Cambios' : 'Crear Categoría'}
+                  </button>
+                  {editingItem && (
+                    <button type="button" className="cancel-btn-full" onClick={() => setEditingItem(null)}>
+                      Cancelar
+                    </button>
+                  )}
+                </div>
               </form>
             </section>
 
@@ -145,6 +209,14 @@ const MenuPage = () => {
                       <h4>{cat.nombre}</h4>
                       <p>{cat.descripcion || 'Sin descripción'}</p>
                     </div>
+                    <div className="card-actions">
+                      <button onClick={() => setEditingItem({ type: 'category', data: cat })} className="edit-icon-btn">
+                        <EditIcon />
+                      </button>
+                      <button onClick={() => handleDeleteCategory(cat.id)} className="delete-icon-btn">
+                        <DeleteIcon />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -155,25 +227,29 @@ const MenuPage = () => {
             <section className="premium-card form-section">
               <div className="section-header">
                 <FastfoodIcon />
-                <h3>Nuevo Producto</h3>
+                <h3>{editingItem ? 'Editar Producto' : 'Nuevo Producto'}</h3>
               </div>
-              <form onSubmit={handleCreateProduct} className="full-form">
+              <form onSubmit={editingItem ? handleUpdateProduct : handleCreateProduct} className="full-form">
                 <div className="input-row">
                   <div className="input-group">
                     <label>Nombre del Producto</label>
                     <input 
                       type="text" 
                       placeholder="Ej: Caña, Hamburguesa..."
-                      value={newProd.nombre}
-                      onChange={(e) => setNewProd({...newProd, nombre: e.target.value})}
+                      value={editingItem ? editingItem.data.nombre : newProd.nombre}
+                      onChange={(e) => editingItem ? 
+                        setEditingItem({...editingItem, data: {...editingItem.data, nombre: e.target.value}}) : 
+                        setNewProd({...newProd, nombre: e.target.value})}
                       required
                     />
                   </div>
                   <div className="input-group">
                     <label>Categoría</label>
                     <select 
-                      value={newProd.categoriaId}
-                      onChange={(e) => setNewProd({...newProd, categoriaId: e.target.value})}
+                      value={editingItem ? editingItem.data.categoriaId : newProd.categoriaId}
+                      onChange={(e) => editingItem ? 
+                        setEditingItem({...editingItem, data: {...editingItem.data, categoriaId: e.target.value}}) : 
+                        setNewProd({...newProd, categoriaId: e.target.value})}
                       required
                     >
                       <option value="">Seleccionar...</option>
@@ -191,19 +267,23 @@ const MenuPage = () => {
                       type="number" 
                       step="0.01"
                       placeholder="0.00"
-                      value={newProd.precio}
-                      onChange={(e) => setNewProd({...newProd, precio: e.target.value})}
+                      value={editingItem ? editingItem.data.precio : newProd.precio}
+                      onChange={(e) => editingItem ? 
+                        setEditingItem({...editingItem, data: {...editingItem.data, precio: e.target.value}}) : 
+                        setNewProd({...newProd, precio: e.target.value})}
                       required
                     />
                   </div>
                   <div className="input-group">
-                    <label>Stock Inicial</label>
+                    <label>Stock</label>
                     <div className="stock-input">
                       <InventoryIcon />
                       <input 
                         type="number" 
-                        value={newProd.stock}
-                        onChange={(e) => setNewProd({...newProd, stock: e.target.value})}
+                        value={editingItem ? editingItem.data.stock : newProd.stock}
+                        onChange={(e) => editingItem ? 
+                          setEditingItem({...editingItem, data: {...editingItem.data, stock: e.target.value}}) : 
+                          setNewProd({...newProd, stock: e.target.value})}
                       />
                     </div>
                   </div>
@@ -216,15 +296,17 @@ const MenuPage = () => {
                     <input 
                       type="text" 
                       placeholder="https://..."
-                      value={newProd.imagenUrl}
-                      onChange={(e) => setNewProd({...newProd, imagenUrl: e.target.value})}
+                      value={editingItem ? (editingItem.data.imagenUrl || '') : newProd.imagenUrl}
+                      onChange={(e) => editingItem ? 
+                        setEditingItem({...editingItem, data: {...editingItem.data, imagenUrl: e.target.value}}) : 
+                        setNewProd({...newProd, imagenUrl: e.target.value})}
                     />
                   </div>
                 </div>
 
-                {newProd.imagenUrl && (
+                {(editingItem ? editingItem.data.imagenUrl : newProd.imagenUrl) && (
                   <div className="image-preview">
-                    <img src={newProd.imagenUrl} alt="Preview" onError={(e) => e.target.style.display='none'} />
+                    <img src={editingItem ? editingItem.data.imagenUrl : newProd.imagenUrl} alt="Preview" onError={(e) => e.target.style.display='none'} />
                   </div>
                 )}
 
@@ -233,14 +315,25 @@ const MenuPage = () => {
                     <span>Producto Activo</span>
                     <input 
                       type="checkbox" 
-                      checked={newProd.activo}
-                      onChange={(e) => setNewProd({...newProd, activo: e.target.checked})}
+                      checked={editingItem ? editingItem.data.activo : newProd.activo}
+                      onChange={(e) => editingItem ? 
+                        setEditingItem({...editingItem, data: {...editingItem.data, activo: e.target.checked}}) : 
+                        setNewProd({...newProd, activo: e.target.checked})}
                     />
                     <span className="slider"></span>
                   </label>
                 </div>
 
-                <button type="submit" className="add-btn-full">Añadir al Menú</button>
+                <div className="form-actions">
+                  <button type="submit" className="add-btn-full">
+                    {editingItem ? 'Guardar Cambios' : 'Añadir al Menú'}
+                  </button>
+                  {editingItem && (
+                    <button type="button" className="cancel-btn-full" onClick={() => setEditingItem(null)}>
+                      Cancelar
+                    </button>
+                  )}
+                </div>
               </form>
             </section>
 
@@ -258,15 +351,25 @@ const MenuPage = () => {
                       ) : (
                         <FastfoodIcon />
                       )}
+                      <div className="header-actions">
+                        <button onClick={() => setEditingItem({ type: 'product', data: prod })} className="mini-action-btn">
+                          <EditIcon fontSize="small" />
+                        </button>
+                        <button onClick={() => handleDeleteProduct(prod.id)} className="mini-action-btn delete">
+                          <DeleteIcon fontSize="small" />
+                        </button>
+                      </div>
                     </div>
                     <div className="prod-details">
                       <div className="prod-header">
                         <h4>{prod.nombre}</h4>
-                        <span className="price">{prod.precio.toFixed(2)}€</span>
                       </div>
-                      <p className="prod-cat-name">
-                        {categories.find(c => c.id === prod.categoriaId)?.nombre}
-                      </p>
+                      <div className="price-row">
+                        <span className="price">{prod.precio.toFixed(2)}€</span>
+                        <p className="prod-cat-name">
+                          {categories.find(c => c.id === prod.categoriaId)?.nombre}
+                        </p>
+                      </div>
                       <div className="prod-footer">
                         <span className={`stock-badge ${prod.stock < 10 ? 'low' : ''}`}>
                           Stock: {prod.stock}

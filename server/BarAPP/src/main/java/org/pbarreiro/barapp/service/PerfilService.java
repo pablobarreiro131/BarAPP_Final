@@ -54,14 +54,38 @@ public class PerfilService {
 
     public PerfilDTO createWithAuth(String email, String password, String nombre, String rol) {
         String supabaseId = supabaseAuthService.createAdminUser(email, password, rol);
-        
+
         Perfil perfil = new Perfil();
         perfil.setId(UUID.fromString(supabaseId));
         perfil.setNombre(nombre);
         perfil.setEmail(email);
         perfil.setRol(rol);
-        
+
         return mapToDTO(perfilRepository.save(perfil));
+    }
+
+    public PerfilDTO update(UUID id, PerfilDTO dto) {
+        Perfil perfil = perfilRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil no encontrado: " + id));
+
+        perfil.setNombre(dto.getNombre());
+        perfil.setRol(dto.getRol());
+
+        return mapToDTO(perfilRepository.save(perfil));
+    }
+
+    public void delete(UUID id) {
+        if (!perfilRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Perfil no encontrado: " + id);
+        }
+
+        try {
+            supabaseAuthService.deleteUser(id.toString());
+        } catch (Exception e) {
+
+            System.err.println("Error borrando de Supabase: " + e.getMessage());
+        }
+        perfilRepository.deleteById(id);
     }
 
     private PerfilDTO mapToDTO(Perfil perfil) {

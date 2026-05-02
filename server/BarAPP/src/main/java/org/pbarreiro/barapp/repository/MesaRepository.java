@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface MesaRepository extends JpaRepository<Mesa, Long> {
     Optional<Mesa> findByNumeroMesa(Integer numeroMesa);
+    java.util.List<Mesa> findAllByOrderByNumeroMesaAsc();
 }

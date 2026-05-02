@@ -56,10 +56,33 @@ export const apiClient = {
     method: 'POST',
     body: JSON.stringify(categoria)
   }),
+  updateCategoria: (id, categoria) => apiClient.fetchWithAuth(`/categorias/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(categoria)
+  }),
+  deleteCategoria: (id) => apiClient.fetchWithAuth(`/categorias/${id}`, {
+    method: 'DELETE'
+  }),
+
   getProductos: () => apiClient.fetchWithAuth('/productos'),
   createProducto: (producto) => apiClient.fetchWithAuth('/productos', {
     method: 'POST',
     body: JSON.stringify(producto)
+  }),
+  updateProducto: (id, producto) => apiClient.fetchWithAuth(`/productos/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(producto)
+  }),
+  deleteProducto: (id) => apiClient.fetchWithAuth(`/productos/${id}`, {
+    method: 'DELETE'
+  }),
+
+  updatePerfil: (id, perfil) => apiClient.fetchWithAuth(`/perfiles/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(perfil)
+  }),
+  deletePerfil: (id) => apiClient.fetchWithAuth(`/perfiles/${id}`, {
+    method: 'DELETE'
   }),
 
   getDashboardResumen: () => apiClient.fetchWithAuth('/dashboard/resumen'),

@@ -242,6 +242,7 @@ select option {
   align-items: center;
   justify-content: center;
   color: var(--text-muted);
+  position: relative;
 }
 
 .prod-img img {
@@ -341,3 +342,89 @@ select option {
 
 input:checked + .slider { background: var(--primary); }
 input:checked + .slider:before { transform: translateX(18px); background: var(--bg-dark); }
+
+
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.category-card:hover .card-actions {
+  opacity: 1;
+}
+
+.edit-icon-btn, .delete-icon-btn, .mini-action-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.edit-icon-btn:hover, .mini-action-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.delete-icon-btn:hover, .mini-action-btn.delete:hover {
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+
+.header-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  background: rgba(18, 18, 18, 0.7);
+  backdrop-filter: blur(4px);
+  padding: 4px;
+}
+
+.product-card:hover .header-actions {
+  opacity: 1;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.cancel-btn-full {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 14px;
+  font-weight: 500;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all var(--transition-fast);
+}
+
+.cancel-btn-full:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}

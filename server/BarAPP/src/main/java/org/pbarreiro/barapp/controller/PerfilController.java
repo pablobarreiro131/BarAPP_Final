@@ -46,4 +46,15 @@ public class PerfilController {
                 request.getRol()
         ));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PerfilDTO> updatePerfil(@PathVariable UUID id, @RequestBody PerfilDTO dto) {
+        return ResponseEntity.ok(perfilService.update(id, dto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePerfil(@PathVariable UUID id) {
+        perfilService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

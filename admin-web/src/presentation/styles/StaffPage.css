@@ -39,6 +39,7 @@
   background: var(--bg-dark);
   border-radius: 0;
   transition: background var(--transition-fast);
+  position: relative;
 }
 
 .staff-card:hover {
@@ -201,4 +202,51 @@
 
 .save-btn:hover {
   opacity: 0.85;
+}
+
+
+.card-actions-mini {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.staff-card:hover .card-actions-mini {
+  opacity: 1;
+}
+
+.staff-action-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.staff-action-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.staff-action-btn.delete:hover {
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+
+.input-field.disabled {
+  background: rgba(255,255,255,0.05);
+  border-style: dashed;
+}
+
+.input-field.disabled input {
+  color: var(--text-muted);
+  cursor: not-allowed;
 }
