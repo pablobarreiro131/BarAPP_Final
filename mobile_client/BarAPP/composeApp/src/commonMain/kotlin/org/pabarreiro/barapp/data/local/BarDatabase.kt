@@ -13,7 +13,7 @@ import org.pabarreiro.barapp.data.local.entity.*
         DetalleComandaEntity::class,
         SessionEntity::class
     ],
-    version = 1
+    version = 2
 )
 abstract class BarDatabase : RoomDatabase() {
     abstract fun barDao(): BarDao

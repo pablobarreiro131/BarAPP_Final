@@ -9,5 +9,5 @@ fun getDatabaseBuilder(): RoomDatabase.Builder<BarDatabase> {
     return Room.databaseBuilder<BarDatabase>(
         name = dbFilePath,
         factory = { BarDatabase::class.instantiateImpl() }
-    )
+    ).fallbackToDestructiveMigration(true)
 }

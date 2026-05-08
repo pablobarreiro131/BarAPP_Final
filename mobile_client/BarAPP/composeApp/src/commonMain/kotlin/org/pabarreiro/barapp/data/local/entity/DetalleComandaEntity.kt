@@ -21,5 +21,6 @@ data class DetalleComandaEntity(
     val productoId: Long,
     val cantidad: Int,
     val precioUnitario: Double,
+    val nombreProducto: String? = null,
     val isSynced: Boolean = true
 )

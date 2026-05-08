@@ -11,6 +11,6 @@ actual class DatabaseBuilder(private val ctx: Context) {
         return Room.databaseBuilder<BarDatabase>(
             context = appContext,
             name = dbFile.absolutePath
-        )
+        ).fallbackToDestructiveMigration(true)
     }
 }

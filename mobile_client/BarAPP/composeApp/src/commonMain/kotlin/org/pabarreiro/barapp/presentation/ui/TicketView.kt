@@ -41,7 +41,7 @@ fun TicketView(
             ) {
 
                 Text(
-                    "BAR APP PREMIUM",
+                    "BAR APP",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,
@@ -53,7 +53,7 @@ fun TicketView(
                 )
 
                 Text(
-                    "Calle de la Gastronomía, 123",
+                    "A Coruña",
                     style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
                     color = Color.DarkGray,
                     modifier = Modifier.fillMaxWidth(),
@@ -108,7 +108,7 @@ fun TicketView(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    (detalle.nombreProducto ?: "Producto").uppercase(),
+                                    (detalle.nombreProducto ?: "Producto #${detalle.productoId}").uppercase(),
                                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                                     color = Color.Black
                                 )

@@ -40,7 +40,8 @@ fun DetalleComandaEntity.toDomain() = DetalleComanda(
     comandaId = comandaId,
     productoId = productoId,
     cantidad = cantidad,
-    precioUnitario = precioUnitario
+    precioUnitario = precioUnitario,
+    nombreProducto = nombreProducto
 )
 
 fun DetalleComanda.toEntity(isSynced: Boolean) = DetalleComandaEntity(
@@ -49,5 +50,6 @@ fun DetalleComanda.toEntity(isSynced: Boolean) = DetalleComandaEntity(
     productoId = productoId,
     cantidad = cantidad,
     precioUnitario = precioUnitario,
+    nombreProducto = nombreProducto,
     isSynced = isSynced
 )
